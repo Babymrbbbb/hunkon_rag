@@ -39,6 +39,7 @@ from sqlmodel import Session
 
 from app.database import engine, init_db
 from app.eval import run_eval
+from app.seed import reseed_if_needed
 
 REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 
@@ -68,6 +69,9 @@ def main() -> int:
 
     init_db()
     with Session(engine) as session:
+        # CI 是全新环境，数据库为空时检索不到任何文档 → 召回率恒为 0 导致误报失败。
+        # 评测前先走自愈合灌库（源与库一致时零开销跳过），保证 CI 可复现。
+        reseed_if_needed(session)
         report = run_eval(session)
 
     now = datetime.now()
