@@ -25,11 +25,27 @@ def test_mock_fingerprint_includes_dim():
     assert fp.startswith("mock:")
 
 
-def test_local_fingerprint_declares_model_dim():
-    """指纹必须在加载模型前就能算出（用于启动时的索引一致性校验）。"""
+def test_local_fingerprint_reflects_actual_implementation():
+    """指纹必须反映「实际写库的向量实现」，而不只是模型规格名。
+
+    模型可用时是 `local:<dim>`；模型缺失时编码会降级为 mock，指纹也必须变成
+    `mock:<dim>`。否则「降级跑过一次 → 切回真模型时指纹相同 → 不重建索引」，
+    库内 256 维旧向量配 1024 维查询，余弦恒 0 且无任何报错（2026-11-03 修）。
+    """
     emb = LocalOnnxEmbedder(str(MODEL_DIR))
-    assert emb.fingerprint.startswith("local:")
-    assert emb.dim > 0
+    if HAS_MODEL:
+        assert emb.fingerprint.startswith("local:")
+        assert emb.dim > 0
+    else:
+        assert emb.fingerprint == f"mock:{settings.embed_dim}"
+        assert emb.dim == settings.embed_dim
+
+
+def test_missing_model_fingerprint_falls_back_to_mock():
+    """模型路径不存在时，指纹必须如实回落到 mock（不依赖运行环境是否有模型）。"""
+    emb = LocalOnnxEmbedder(str(MODEL_DIR / "__not_exist__"))
+    assert emb.fingerprint.startswith("mock:")
+    assert emb.dim == settings.embed_dim
 
 
 def test_missing_model_degrades_to_mock():
@@ -42,7 +58,10 @@ def test_missing_model_degrades_to_mock():
 def test_default_provider_from_settings():
     """get_embedder 必须尊重配置（CI 下 conftest 固定为 mock）。"""
     emb = get_embedder()
-    assert emb.fingerprint.startswith(settings.embedder_provider)
+    provider = settings.embedder_provider
+    if provider == "local" and emb.fingerprint.startswith("mock:"):
+        pytest.skip("本机缺 local 模型，已降级 mock")
+    assert emb.fingerprint.startswith(provider)
 
 
 @pytest.mark.skipif(not HAS_MODEL, reason="本地未安装 ONNX 模型（CI 环境正常跳过）")
