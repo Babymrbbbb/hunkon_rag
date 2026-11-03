@@ -105,3 +105,23 @@ def test_llm_compiler_fallback_on_invalid():
     pages = llm_index._parse_llm_output("这不是JSON")
     assert pages, "非法输出未降级兜底"
     assert all(isinstance(p, WikiPage) for p in pages)
+
+
+def test_llm_compiler_survives_llm_exception(monkeypatch):
+    """LLM 直接抛异常（429 限流 / 超时 / 断网）时，聚合层必须降级而不是让 /chat 500。
+
+    2026-11-03 修复前：_build_llm 里 llm.complete 没有异常捕获，LLM 一限流就抛到
+    /chat 变成 500，整条问答链路不可用。_parse_llm_output 的兜底只覆盖「返回了但
+    解析失败」，不覆盖「根本没返回」。本测试锁住后者。
+    """
+
+    class BoomLLM:
+        def complete(self, *args, **kwargs):
+            raise RuntimeError("429 Too Many Requests")
+
+    monkeypatch.setattr("app.wiki.get_llm_provider", lambda: BoomLLM())
+    idx = LLMWikiIndex(ROOT / "data" / "corpus")
+
+    assert idx.generated_by == "rule-fallback", "LLM 异常后应标记为规则兜底"
+    assert idx.pages, "LLM 不可用时仍必须有规则兜底聚合页，否则聚合层为空"
+    assert idx.term_to_page, "兜底后词表映射不能为空，否则聚合检索全失效"

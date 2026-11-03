@@ -210,7 +210,18 @@ class LLMWikiIndex(WikiIndex):
         user_msg = f"以下是品牌资料：\n\n{corpus_block}\n\n请识别实体/概念并输出聚合页 JSON。"
 
         llm = get_llm_provider()
-        raw = llm.complete(_LLM_COMPILE_SYSTEM, user_msg)
+        try:
+            raw = llm.complete(_LLM_COMPILE_SYSTEM, user_msg)
+        except Exception:
+            # LLM 不可用（429 限流 / 超时 / 网络中断）：退回规则词表聚合页。
+            # 2026-11-03 修复：此前这里无异常捕获，LLM 一限流就抛到 /chat 变成 500，
+            # 整条问答链路不可用。_fallback_rule_pages 本就是为此准备的兜底，
+            # 但原先只覆盖「返回了但解析失败」，没覆盖「根本没返回」。
+            self.generated_by = "rule-fallback"
+            for page in self._fallback_rule_pages():
+                self.pages[page.title] = page
+                self.term_to_page[page.title] = page.title
+            return
         pages = self._parse_llm_output(raw)
         for page in pages:
             self.pages[page.title] = page
