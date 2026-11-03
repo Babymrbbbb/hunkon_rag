@@ -251,8 +251,8 @@ LLMOps 设计文档（含与生产级差距的诚实边界）见 [docs/llmops.md
 
 **技术博客**：
 - <a href="docs/blog/rag-data-trust.md" target="_blank">《从"答错 43 家门店"到数据可信：一个 RAG 知识库的可靠性实战》</a>——完整复盘数据事故、单一真相源、自愈索引、接地测试与评测闭环的落地过程。
+- <a href="docs/blog/rag-eval-reliability.md" target="_blank">《从 83% 到 100%：一个 RAG 知识库评测体系的可靠性实战》</a>——评测通过率从 83.3% 到 24/24（100%）的完整过程：口语化检索根治、评测词表边界修正、权威闸收敛共享模块、知识治理 80→0 分级闭环。
 - <a href="docs/blog/ai-adoption-methodology.md" target="_blank">《AI 落地五步法：从 47 家门店的实战中提炼的跨行业方法论》</a>——把真实 AI 落地经验抽象为「诊断→数据→闭环→评测→规模」五步法，附零售/制造/医疗/教育跨行业推演。
-- <a href="docs/blog/retail-ai-integration.md" target="_blank">《一个烘焙连锁的 AI 落地：从 ERP 到私域的全域整合系统》</a>——从数据整合（ERP→收银→公域→私域）到 AI 六大类应用，再到 AI 嵌入门店日常的完整落地复盘。
 
 ---
 
