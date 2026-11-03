@@ -14,5 +14,13 @@
     "faithfulness_rate": 1.0,
     "threshold": 0.75,
     "passed": true
+  },
+  {
+    "timestamp": "2026-11-03T18:09:55",
+    "total": 8,
+    "retrieval_hit_rate": 0.875,
+    "faithfulness_rate": 1.0,
+    "threshold": 0.75,
+    "passed": true
   }
 ]
