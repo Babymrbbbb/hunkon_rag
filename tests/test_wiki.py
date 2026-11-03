@@ -51,8 +51,13 @@ def test_wiki_search_hit_concept():
 
 
 def test_wiki_save_index():
+    """强制构建时聚合索引必须落盘（save_index 默认 force=False 是并发优化：不写盘）。
+
+    注意：data/wiki/ 已被 gitignore（运行时重建），CI 全新检出时文件不存在，
+    因此这里必须走 force=True 的真实落盘路径，不能依赖仓库里的残留文件。
+    """
     wiki = build_wiki()
-    wiki.save_index()
+    wiki.save_index(force=True)
     index_path = ROOT / "data" / "wiki" / "index.json"
     assert index_path.exists(), "聚合索引文件未生成"
 
