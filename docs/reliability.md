@@ -58,7 +58,7 @@ swan_rag 当前为「单轮问答 + 检索」的短链路，无跨请求长链�
 可靠性不是一次性设计，而是靠**持续评测**维持：
 
 ```
-golden-set（eval_golden.json）→ pytest 自动化回归 → 检索命中率阈值（≥0.75）
+golden-set（eval_golden.json）→ pytest 自动化回归 → 检索命中率阈值（CI 门禁 ≥0.95）
         ↓
 Badcase 复盘 → 修正 corpus / 调整检索参数 → 回归
 ```

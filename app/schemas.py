@@ -46,7 +46,6 @@ class EvalResult(BaseModel):
     # 避免只看合计命中率时误以为文档层检索正常（当时聚合页兜底掩盖了关键词路失效）。
     wiki_hit: bool = False
     doc_hit: bool = False
-    top1_source: str = "none"  # wiki | doc | none
 
 
 class EvalReport(BaseModel):

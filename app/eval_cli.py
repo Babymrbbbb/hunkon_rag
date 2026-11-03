@@ -1,7 +1,7 @@
 """评测 CI/CD 命令行工具（LLMOps 雏形）。
 
 用法：
-    python -m app.eval_cli                # 跑全部 golden 用例，阈值 0.75，生成报告
+    python -m app.eval_cli                # 跑全部 golden 用例，阈值 0.95，生成报告
     python -m app.eval_cli --threshold 0.8   # 自定义阈值
     python -m app.eval_cli --json        # 输出 JSON 到 stdout（供 CI 解析）
     python -m app.eval_cli --mock         # 强制离线 MockProvider + rule 编译（CI 可复现）
@@ -63,8 +63,10 @@ def _save_history(history: list[dict]) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="swan_rag 评测门禁（LLMOps CI）")
-    ap.add_argument("--threshold", type=float, default=0.75,
-                    help="召回命中率阈值，低于则非零退出（默认 0.75）")
+    # 默认阈值与 CI 保持一致（0.95）。此前本地默认 0.75、CI 用 0.95，
+    # 会出现「本地跑绿、推送即红」的假阴性陷阱（2026-11-03 统一）。
+    ap.add_argument("--threshold", type=float, default=0.95,
+                    help="召回命中率阈值，低于则非零退出（默认 0.95，与 CI 一致）")
     ap.add_argument("--json", action="store_true", help="输出 JSON 到 stdout")
     ap.add_argument("--mock", action="store_true",
                     help="强制离线 MockProvider + rule 编译（已在模块顶部生效）")
@@ -105,7 +107,8 @@ def main() -> int:
         f"- 用例总数: {report.total}",
         f"- 召回命中率: **{report.retrieval_hit_rate:.1%}**（阈值 {args.threshold:.0%}）",
         f"- └ 原始文档层命中: {report.doc_hit_rate:.1%}",
-        f"- └ 聚合页层命中: {report.wiki_hit_rate:.1%}",
+        f"- └ 聚合页层命中: {report.wiki_hit_rate:.1%}"
+        f"（判定口径：聚合页标题 == 期望文档标题；golden 未设 wiki 期望时恒为 0，属预期而非故障）",
         f"- 忠实度: **{report.faithfulness_rate:.1%}**",
         f"- 结果: {'✅ 通过' if record['passed'] else '❌ 未达阈值'}",
         "",

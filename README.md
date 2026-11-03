@@ -231,8 +231,8 @@ python -m app.eval
 ### 评测门禁（LLMOps CI，2026-10-30 新增 / 2026-11-03 加固）
 
 ```bash
-python -m app.eval_cli --mock            # 跑 8 用例，默认阈值 0.75，生成 Markdown 报告 + 写 history
-python -m app.eval_cli --mock --threshold 0.95   # 自定义阈值（CI 用 0.95 = 要求 8/8）
+python -m app.eval_cli --mock            # 跑 8 用例，默认阈值 0.95（与 CI 一致），生成 Markdown 报告 + 写 history
+python -m app.eval_cli --mock --threshold 0.9    # 自定义阈值（放宽时请说明理由）
 python -m app.eval_cli --mock --json      # 输出 JSON 供 CI 解析
 ```
 

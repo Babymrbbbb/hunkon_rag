@@ -95,8 +95,9 @@ def test_eval_retrieval_hits():
     assert r.status_code == 200
     rep = r.json()
     assert rep["total"] >= 8
-    # 离线 mock 下，召回命中率应稳定 >= 0.75（检索与切分正确性的自动证明）
-    assert rep["retrieval_hit_rate"] >= 0.75
+    # 离线 mock 下，召回命中率应稳定 100%（检索与切分正确性的自动证明）。
+    # 阈值与 CI 门禁对齐（0.95）：此前写 0.75 会在真实回归时放行（2026-11-03 收紧）。
+    assert rep["retrieval_hit_rate"] >= 0.95
 
 
 def test_validation_422():

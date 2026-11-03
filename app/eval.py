@@ -70,7 +70,6 @@ def run_eval(session: Session) -> EvalReport:
         if wiki_hit:
             wiki_hits_n += 1
 
-        top1_source = "wiki" if wiki_titles else ("doc" if doc_titles else "none")
         details.append(
             EvalResult(
                 question=question,
@@ -81,7 +80,6 @@ def run_eval(session: Session) -> EvalReport:
                 answer=answer[:200],
                 wiki_hit=wiki_hit,
                 doc_hit=doc_hit,
-                top1_source=top1_source,
             )
         )
 

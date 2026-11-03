@@ -46,6 +46,11 @@ _CONCEPT_TERMS = {
     "夏季新品": "concept/夏季新品",
 }
 
+# 品牌名聚合页：这类词几乎出现在每条业务问题里，命中后若排在前面会形成
+# 「万能兜底页」，掩盖真正命中的实体/概念页（2026-11-03 审查修复）。
+# 新增品牌/子品牌时改这里即可，不要散落在函数内部。
+_BRAND_TERMS = {"天鹅公主"}
+
 WIKI_DIR = Path(__file__).resolve().parent.parent / "data" / "wiki"
 INDEX_PATH = WIKI_DIR / "index.json"
 
@@ -150,7 +155,7 @@ class WikiIndex:
         - 具体实体/概念（冰面包、门店网络、加盟政策…）优先；
         - 品牌名聚合页作为兜底放最后（仅在无更具体命中时返回）。
         """
-        BRAND_TERMS = {"天鹅公主"}
+        BRAND_TERMS = _BRAND_TERMS
         hits = []
         for term, page_title in self.term_to_page.items():
             if term in query:
