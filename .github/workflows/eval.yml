@@ -1,0 +1,47 @@
+name: eval-gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  eval:
+    name: RAG Eval Gate (mock)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run eval gate
+        id: eval
+        run: |
+          python -m app.eval_cli --mock --json --threshold 0.75 > /tmp/eval_result.json
+          cat /tmp/eval_result.json
+
+      - name: Report result
+        run: |
+          python - <<'EOF'
+          import json
+          with open("/tmp/eval_result.json", encoding="utf-8") as f:
+              r = json.load(f)
+          print(f"用例总数: {r['total']}")
+          print(f"召回命中率: {r['retrieval_hit_rate']:.1%} (阈值 {r['threshold']:.0%})")
+          print(f"忠实度: {r['faithfulness_rate']:.1%}")
+          print("结果: " + ("✅ 通过" if r["passed"] else "❌ 未达阈值"))
+          if not r["passed"]:
+              raise SystemExit(2)
+          EOF
