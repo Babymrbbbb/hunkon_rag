@@ -42,11 +42,19 @@ class EvalResult(BaseModel):
     retrieval_hit: bool
     faithfulness_hit: bool
     answer: str
+    # 命中层级透明化（2026-11-03）：区分「聚合页命中」与「原始文档命中」，
+    # 避免只看合计命中率时误以为文档层检索正常（当时聚合页兜底掩盖了关键词路失效）。
+    wiki_hit: bool = False
+    doc_hit: bool = False
+    top1_source: str = "none"  # wiki | doc | none
 
 
 class EvalReport(BaseModel):
     total: int
     retrieval_hit_rate: float
     faithfulness_rate: float
+    # 命中层级拆分（2026-11-03）：doc=原始文档层，wiki=聚合页层；合计为 retrieval_hit_rate
+    doc_hit_rate: float = 0.0
+    wiki_hit_rate: float = 0.0
     note: str
     details: List[EvalResult]

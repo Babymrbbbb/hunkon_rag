@@ -49,7 +49,7 @@ def _clear_index(session: Session) -> None:
 
 
 def rebuild_corpus(session: Session) -> int:
-    """强制重建：清空旧索引 → 重新灌库 → 写入最新哈希。"""
+    """强制重建：清空旧索引（含已删除文档的残留 chunk）→ 重新灌库 → 写入最新哈希。"""
     _clear_index(session)
     n = seed_corpus(session)
     # upsert：先删除旧哈希再写入，避免重复启动时 UNIQUE 冲突（2026-10-30 压测时发现）
@@ -71,3 +71,8 @@ def reseed_if_needed(session: Session) -> bool:
         return False
     rebuild_corpus(session)
     return True
+
+
+def force_rebuild(session: Session) -> int:
+    """评测/测试用：无视 auto_seed 与哈希一致，强制清空重灌（保证无脏数据残留）。"""
+    return rebuild_corpus(session)

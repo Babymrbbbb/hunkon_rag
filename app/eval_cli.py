@@ -7,10 +7,13 @@
     python -m app.eval_cli --mock         # 强制离线 MockProvider + rule 编译（CI 可复现）
 
 行为：
-    1. 跑 golden set（复用 app.eval.run_eval）
-    2. 生成 reports/eval_report_<timestamp>.md（Markdown 报告）
-    3. 追加 reports/history.json（时间序列，供监控看板使用）
-    4. 召回命中率 < threshold 时以非零退出码退出（失败拦截，CI 可据此阻断）
+    1. 强制重建检索索引（清空 document/chunk，从 data/corpus 重灌）
+       —— 保证 CI 空库可跑，同时清除本地手动 /ingest 留下的测试脏数据；
+       注意：这会丢弃通过 /ingest 手工灌入的文档（评测只认 corpus 真相源）。
+    2. 跑 golden set（复用 app.eval.run_eval）
+    3. 生成 reports/eval_report_<timestamp>.md（Markdown 报告）
+    4. 追加 reports/history.json（时间序列，供监控看板使用）
+    5. 召回命中率 < threshold 时以非零退出码退出（失败拦截，CI 可据此阻断）
 
 --mock 说明：
     生产 .env 可能配置了真实 LLM（RAG_LLM_PROVIDER=real + RAG_WIKI_COMPILER=llm），
@@ -39,7 +42,7 @@ from sqlmodel import Session
 
 from app.database import engine, init_db
 from app.eval import run_eval
-from app.seed import reseed_if_needed
+from app.seed import force_rebuild
 
 REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 
@@ -70,8 +73,9 @@ def main() -> int:
     init_db()
     with Session(engine) as session:
         # CI 是全新环境，数据库为空时检索不到任何文档 → 召回率恒为 0 导致误报失败。
-        # 评测前先走自愈合灌库（源与库一致时零开销跳过），保证 CI 可复现。
-        reseed_if_needed(session)
+        # 评测前强制重建索引（清空 + 重灌）：既保证空库可跑，也清除本地残留的
+        # 手动 ingest 测试文档（如「缓存失效测试」），避免脏数据污染评测结果。
+        force_rebuild(session)
         report = run_eval(session)
 
     now = datetime.now()
@@ -81,6 +85,8 @@ def main() -> int:
         "total": report.total,
         "retrieval_hit_rate": report.retrieval_hit_rate,
         "faithfulness_rate": report.faithfulness_rate,
+        "doc_hit_rate": report.doc_hit_rate,
+        "wiki_hit_rate": report.wiki_hit_rate,
         "threshold": args.threshold,
         "passed": report.retrieval_hit_rate >= args.threshold,
     }
@@ -98,18 +104,21 @@ def main() -> int:
         "",
         f"- 用例总数: {report.total}",
         f"- 召回命中率: **{report.retrieval_hit_rate:.1%}**（阈值 {args.threshold:.0%}）",
+        f"- └ 原始文档层命中: {report.doc_hit_rate:.1%}",
+        f"- └ 聚合页层命中: {report.wiki_hit_rate:.1%}",
         f"- 忠实度: **{report.faithfulness_rate:.1%}**",
         f"- 结果: {'✅ 通过' if record['passed'] else '❌ 未达阈值'}",
         "",
         "## 逐题明细",
         "",
-        "| 问题 | 期望文档 | Top1 召回 | 召回命中 | 忠实命中 |",
-        "|---|---|---|---|---|",
+        "| 问题 | 期望文档 | Top1 召回 | 文档命中 | 聚合页命中 | 忠实命中 |",
+        "|---|---|---|---|---|---|",
     ]
     for d in report.details:
         lines.append(
             f"| {d.question[:40]} | {d.expected_doc} | {d.retrieved_top1_doc} "
-            f"| {'✅' if d.retrieval_hit else '❌'} | {'✅' if d.faithfulness_hit else '❌'} |"
+            f"| {'✅' if d.doc_hit else '❌'} | {'✅' if d.wiki_hit else '—'} "
+            f"| {'✅' if d.faithfulness_hit else '❌'} |"
         )
     lines.append("")
     lines.append(f"> {report.note}")

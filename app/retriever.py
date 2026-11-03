@@ -82,7 +82,12 @@ class InvertedIndex:
         return math.log(1 + (self.doc_len - df + 0.5) / (df + 0.5))
 
     def search(self, query: str, top_k: int = 5, k1: float = 1.5, b: float = 0.75) -> List[Tuple[float, int]]:
-        """BM25-lite：对查询词累加 IDF × tf 饱和，返回 (score, chunk_id)。"""
+        """BM25-lite：对查询词累加 IDF × tf 饱和，返回 (score, chunk_id)。
+
+        注意返回顺序必须是 (score, chunk_id)，与 rrf_fuse 的 (score, cid) 约定一致。
+        （2026-11-03 修复：此前返回 (chunk_id, score)，导致 RRF 融合时两者互换，
+        关键词路结果被整体丢弃，混合检索实际退化为纯向量检索。）
+        """
         terms = _tokenize(query)
         if not terms:
             return []
@@ -97,7 +102,8 @@ class InvertedIndex:
                 denom = tf + k1 * (1 - b + b * dl / avg_len)
                 scores[cid] += idf * (tf * (k1 + 1)) / denom
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        return ranked[:top_k]
+        # scores.items() 是 (chunk_id, score)，这里显式翻转成 (score, chunk_id)
+        return [(float(score), int(cid)) for cid, score in ranked[:top_k]]
 
 
 # ---------- 向量召回 ----------
@@ -120,14 +126,21 @@ def rrf_fuse(ranked_lists: List[List[Tuple[float, int]]], k: int = 60, top_k: in
 
     对每个 chunk，累加 1/(k + rank)，rank 为该路中的位次（从 1 开始）。
     这样两路都靠前的 chunk 得分最高，兼顾精确与语义。
+
+    入参约定：每路都是 [(score, chunk_id), ...]，chunk_id 必须是 int。
+    2026-11-03 加防御校验：曾因上游返回 (chunk_id, score) 顺序颠倒，浮点数被当成
+    chunk_id 写入融合表，最终全部被 by_id 过滤丢弃且不报错（混合检索静默退化为纯向量）。
+    这里显式校验并纠正，避免同类问题再次静默发生。
     """
     scores: dict[int, float] = defaultdict(float)
     for ranked in ranked_lists:
-        for rank, (_score, cid) in enumerate(ranked, start=1):
-            scores[cid] += 1.0 / (k + rank)
+        for rank, (a, b) in enumerate(ranked, start=1):
+            # 约定 (score:float, chunk_id:int)；若上游颠倒则自动纠正
+            score, cid = (a, b) if isinstance(a, float) else (b, a)
+            scores[int(cid)] += 1.0 / (k + rank)
     fused = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     # 统一返回 (score, chunk_id) 顺序，与 search 解包一致
-    return [(float(score), cid) for cid, score in fused[:top_k]]
+    return [(float(score), int(cid)) for cid, score in fused[:top_k]]
 
 
 # ---------- 检索器 ----------

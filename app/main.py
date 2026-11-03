@@ -24,7 +24,6 @@ from app.schemas import (
     MetricsResponse,
 )
 from app.seed import reseed_if_needed
-from sqlmodel import Session
 
 
 @asynccontextmanager

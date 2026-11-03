@@ -228,17 +228,20 @@ python -m app.eval
 
 完整评测报告（逐题明细 + Badcase 分析 + 成本/延迟估算）见 [docs/eval-report.md](docs/eval-report.md)。
 
-### 评测门禁（LLMOps CI，2026-10-30 新增）
+### 评测门禁（LLMOps CI，2026-10-30 新增 / 2026-11-03 加固）
 
 ```bash
-python -m app.eval_cli --mock            # 跑 8 用例，阈值 0.75，生成 Markdown 报告 + 写 history
-python -m app.eval_cli --mock --threshold 0.8   # 自定义阈值
+python -m app.eval_cli --mock            # 跑 8 用例，默认阈值 0.75，生成 Markdown 报告 + 写 history
+python -m app.eval_cli --mock --threshold 0.95   # 自定义阈值（CI 用 0.95 = 要求 8/8）
 python -m app.eval_cli --mock --json      # 输出 JSON 供 CI 解析
 ```
 
 - 召回命中率低于阈值时**非零退出码（2）**——CI 可据此阻断合并（失败拦截）
 - `--mock` 强制离线 MockProvider + rule 编译，**不受上游 LLM 限流影响，CI 可复现**
-- 产物：`reports/eval_report_<时间戳>.md` + `reports/history.json`（监控看板数据源）
+- 评测前**强制重建索引**（清空 document/chunk 后从 `data/corpus` 重灌）：保证 CI 空库可跑，
+  同时清除本地 `/ingest` 留下的测试脏数据。副作用是本操作会丢弃手工灌入的文档，评测只认 corpus 真相源
+- 产物：`reports/eval_report_<时间戳>.md` + `reports/history.json`（监控看板数据源），CI 中以 artifact 上传
+- CI 顺序：`pytest`（含检索契约测试）→ 评测门禁，任一失败即红
 
 ### 监控看板（LLMOps 可观测，2026-10-30 新增）
 

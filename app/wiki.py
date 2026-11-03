@@ -142,12 +142,24 @@ class WikiIndex:
             self.term_to_page[term] = page_title
 
     def search(self, query: str) -> List[WikiPage]:
-        """检索聚合页：命中业务词则返回对应聚合页。"""
+        """检索聚合页：命中业务词则返回对应聚合页。
+
+        排序策略（2026-11-03 审查修复）：品牌名（如「天鹅公主」）会出现在绝大多数
+        业务问题里，若按词表遍历顺序返回，会把「天鹅公主」万能页顶到最前，掩盖
+        真正命中的实体/概念页。这里把命中词按「非品牌名优先」排序：
+        - 具体实体/概念（冰面包、门店网络、加盟政策…）优先；
+        - 品牌名聚合页作为兜底放最后（仅在无更具体命中时返回）。
+        """
+        BRAND_TERMS = {"天鹅公主"}
         hits = []
         for term, page_title in self.term_to_page.items():
             if term in query:
-                hits.append(self.pages[page_title])
-        return hits
+                hits.append((term, self.pages[page_title]))
+        # 有具体实体/概念命中时，剔除品牌兜底页（否则每条品牌问题都会被注入通用品牌简介）
+        specific = [h for h in hits if h[0] not in BRAND_TERMS]
+        if specific:
+            return [p for _term, p in specific]
+        return [p for _term, p in hits]
 
     def to_index_json(self) -> dict:
         return {
