@@ -255,6 +255,7 @@ LLMOps 设计文档（含与生产级差距的诚实边界）见 [docs/llmops.md
 - <a href="docs/blog/llmops-production-monitoring.md" target="_blank">《从离线门禁到生产监控：RAG 知识库的 LLMOps 补全实战》</a>——零依赖 Langfuse 生产流量采样监控、RAGAS 四指标量化，以及评测回归暴露并修复聚合页口径漂移的实战。
 - <a href="docs/blog/semantic-cache-query-rewrite.md" target="_blank">《语义缓存与查询改写：RAG 生产级化的最后两块拼图》</a>——零依赖 SQLite 语义缓存（余弦命中、省成本降延迟）+ LLM 查询改写（质量校验、静默降级），25 项单元测试与端到端验证。
 - <a href="docs/blog/feedback-ci-dashboard.md" target="_blank">《从反馈闭环到 CI 门禁：RAG 知识库的生产运维补全》</a>——用户点赞/点踩沉淀 golden set、GitHub Actions 评测门禁（mock 离线可复现）、零依赖可视化运维看板，13 项单元测试与端到端验证。
+- <a href="docs/blog/zero-dep-doc-parsing.md" target="_blank">《零依赖文档深度解析：让 docx、压缩 PDF 与表格进入 RAG》</a>——纯标准库解析 docx 段落+表格、PDF FlateDecode 压缩流、xlsx 表格转 Markdown，修复 4 个真实 bug，9 项单元测试与真实文件验证。
 - <a href="docs/blog/ai-adoption-methodology.md" target="_blank">《AI 落地五步法：从 47 家门店的实战中提炼的跨行业方法论》</a>——把真实 AI 落地经验抽象为「诊断→数据→闭环→评测→规模」五步法，附零售/制造/医疗/教育跨行业推演。
 
 ---
