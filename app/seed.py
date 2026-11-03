@@ -69,7 +69,20 @@ def rebuild_corpus(session: Session) -> int:
     session.add(Meta(key=_HASH_KEY, value=corpus_hash()))
     session.add(Meta(key=_FP_KEY, value=embedder_fingerprint()))
     session.commit()
+    # 重建后必须让检索缓存失效：新建的 chunk 行数与最大 id 可能与旧数据完全相同，
+    # 仅靠指纹判断会继续命中旧缓存（旧维度/旧文本），表现为「重建了却没生效」。
+    _invalidate_retrieval_cache()
     return n
+
+
+def _invalidate_retrieval_cache() -> None:
+    """延迟导入避免循环依赖（retriever → embedder → config，均不反向依赖 seed）。"""
+    try:
+        from app.retriever import invalidate_cache
+
+        invalidate_cache()
+    except Exception:  # 缓存模块不可用时不应阻断重建
+        pass
 
 
 def reseed_if_needed(session: Session) -> bool:

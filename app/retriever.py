@@ -17,7 +17,7 @@ from typing import List, Tuple
 
 from sqlmodel import Session, func, select
 
-from app.embedder import Embedder
+from app.embedder import Embedder, get_embedder
 from app.models import Chunk, Document
 
 # ---------- 文本处理 ----------
@@ -204,7 +204,27 @@ def _corpus_hash_fingerprint(session: Session) -> str:
         db_part = f"{row[0]}:{row[1] if row[1] is not None else 0}"
     except Exception:
         db_part = "?"
-    return f"{corpus_part}|{db_part}"
+    # 向量化实现也参与指纹：同语料重建（chunk 行数与最大 id 不变）时，
+    # 若换了模型，库内向量维度已变而指纹不变会命中旧缓存 —— 检索拿到的仍是
+    # 旧维度向量，余弦恒 0，表现为「换了模型但效果不升反降」（2026-11-03 实测踩到）。
+    try:
+        emb_part = get_embedder().fingerprint
+    except Exception:
+        emb_part = "?"
+    return f"{corpus_part}|{db_part}|{emb_part}"
+
+
+def invalidate_cache() -> None:
+    """强制下一次检索重载 chunk 与倒排索引。
+
+    seed 重建完成后必须调用：重建只改 chunk 内容（行数/最大 id 可能完全不变），
+    仅靠指纹无法感知，缓存会继续供旧向量。
+    """
+    _CHUNK_CACHE["hash"] = None
+    _CHUNK_CACHE["chunks"] = None
+    _CHUNK_CACHE["index"] = None
+    _CHUNK_CACHE["by_id"] = None
+    _CHUNK_CACHE["doc_titles"] = None
 
 
 def _load_chunk_data(session: Session) -> None:

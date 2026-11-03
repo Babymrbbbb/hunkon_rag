@@ -48,6 +48,13 @@ jobs:
           python -m app.eval_cli --mock --json --threshold 0.95 > /tmp/eval_result.json
           cat /tmp/eval_result.json
 
+      # 语义探针：只测「向量层语义泛化」，**不设门禁**。
+      # CI 无 613 MB 本地模型，local 会降级为 mock（脚本会标注「降级」），
+      # 因此这里仅作冒烟与留痕；有意义的对照需在装有模型的机器上跑。
+      - name: Semantic probe (non-blocking)
+        continue-on-error: true
+        run: python -m app.eval_probe --embedders mock
+
       - name: Upload eval artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,6 +63,7 @@ jobs:
           path: |
             /tmp/eval_result.json
             reports/eval_report_*.md
+            reports/probe_*.md
           if-no-files-found: warn
 
       - name: Report result

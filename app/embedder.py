@@ -152,12 +152,29 @@ class LocalOnnxEmbedder(Embedder):
         raw = Path(model_dir or settings.embedder_local_dir)
         self.model_dir = raw if raw.is_absolute() else (_PROJECT_ROOT / raw)
         self.spec = _LOCAL_SPECS.get(self.model_dir.name, _DEFAULT_SPEC)
-        self.dim = int(self.spec["dim"])
+        self._spec_dim = int(self.spec["dim"])
         self._np = None
         self._sess = None
         self._tok = None
         self._ok: Optional[bool] = None
         self._fallback = MockEmbedder()
+
+    # ---------- 一致性元信息 ----------
+    # 必须反映「实际写库的向量」，不能只报模型规格：模型缺失时编码走 mock，
+    # 落的库是 256 维；若指纹仍写 local:1024，下次切回真模型指纹相同便不会重建，
+    # 于是 256 维旧库 + 1024 维查询，余弦恒为 0 且无任何报错。
+
+    @property
+    def dim(self) -> int:  # type: ignore[override]
+        if self._ok is None:
+            self._load()
+        return self._spec_dim if self._ok else self._fallback.dim
+
+    @property
+    def fingerprint(self) -> str:  # type: ignore[override]
+        if self._ok is None:
+            self._load()
+        return f"local:{self._spec_dim}" if self._ok else self._fallback.fingerprint
 
     # ---------- 内部 ----------
 
@@ -185,7 +202,7 @@ class LocalOnnxEmbedder(Embedder):
             self._tok.enable_truncation(self.spec.get("max_len", 512))
             self._np = np
             self._ok = True
-            print(f"[embed] local 模型已加载: {self.model_dir.name} ({self.dim} 维)", file=sys.stderr)
+            print(f"[embed] local 模型已加载: {self.model_dir.name} ({self._spec_dim} 维)", file=sys.stderr)
         except Exception as e:  # 缺依赖、模型损坏、路径错误 —— 一律降级，不阻断服务
             self._ok = False
             print(f"[embed] 本地模型不可用，降级 mock: {e}", file=sys.stderr)
@@ -250,13 +267,16 @@ _embedder_cache: dict = {}
 
 def get_embedder() -> Embedder:
     provider = settings.embedder_provider
-    if provider in _embedder_cache:
-        return _embedder_cache[provider]
+    # 缓存键对 mock 带上维度：MockEmbedder 的 dim 在构造时取自 settings.embed_dim，
+    # 只按 provider 缓存会导致「改了维度仍拿回旧实例」，指纹谎报旧维度。
+    cache_key = f"{provider}:{settings.embed_dim}" if provider == "mock" else provider
+    if cache_key in _embedder_cache:
+        return _embedder_cache[cache_key]
     if provider == "real":
         embedder: Embedder = RealEmbedder()
     elif provider == "local":
         embedder = LocalOnnxEmbedder()
     else:
         embedder = MockEmbedder()
-    _embedder_cache[provider] = embedder
+    _embedder_cache[cache_key] = embedder
     return embedder

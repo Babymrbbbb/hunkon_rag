@@ -53,6 +53,23 @@
 - 模型缺失或依赖缺失时自动降级 mock，服务不中断
 - 对照评测：`python -m app.eval_cli --mock --embedder local`（LLM/聚合页保持 mock，只换向量）
 
+**真向量到底有没有用？** 门禁用的 8 条 golden 偏关键词型（问题里直接出现品牌名/产品名），
+BM25 关键词路本就能命中，RRF 融合会把向量差异掩盖——mock 与 local 都是 8/8，看不出区别。
+因此另设一套「语义探针」（`data/eval_semantic_probe.json`，12 条同义改写、几乎无字面重叠的问题）：
+
+| provider | top1 命中率 | top3 命中率 |
+|---|---|---|
+| `mock`（哈希词袋） | 33.3% | 75.0% |
+| `local`（qwen3-embedding-0.6b） | **75.0%** | **100.0%** |
+
+```bash
+python -m app.eval_probe                 # mock vs local 对照，输出 reports/probe_<时间戳>.md
+python -m app.eval_probe --embedders mock --json
+```
+
+探针**不设门禁**（退出码恒 0）：CI 没有 613 MB 模型，local 必然降级为 mock，接门禁只会误报。
+它只回答一个问题——「向量层值不值得开」。
+
 ---
 
 ## 三、架构图
@@ -257,6 +274,20 @@ python -m app.eval_cli --mock --json      # 输出 JSON 供 CI 解析
   同时清除本地 `/ingest` 留下的测试脏数据。副作用是本操作会丢弃手工灌入的文档，评测只认 corpus 真相源
 - 产物：`reports/eval_report_<时间戳>.md` + `reports/history.json`（监控看板数据源），CI 中以 artifact 上传
 - CI 顺序：`pytest`（含检索契约测试）→ 评测门禁，任一失败即红
+
+### 语义探针（非门禁，2026-11-03 新增）
+
+```bash
+python -m app.eval_probe                  # mock vs local 对照
+python -m app.eval_probe --embedders mock --json
+```
+
+- 目的：单独量化「向量层的语义泛化」，与召回门禁解耦。golden 门禁测「整套检索对不对」，
+  探针测「换掉向量实现差多少」——两者混在一起会互相掩盖。
+- **退出码恒为 0**：CI 无本地模型，local 降级为 mock，若接门禁会每次失败。
+  因此 CI 里只做 `continue-on-error` 冒烟，真正的对照在装有模型的机器上跑。
+- 产物：`reports/probe_<时间戳>.md`（逐题对照，标注 ✅ 命中 / ⚠️ 仅 top3 / ❌ 未召回）
+
 
 ### 监控看板（LLMOps 可观测，2026-10-30 新增）
 
