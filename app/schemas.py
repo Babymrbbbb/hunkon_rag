@@ -1,7 +1,7 @@
 """请求/响应模型（非表模型，纯 Pydantic）。入参/出参分离。"""
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class IngestRequest(BaseModel):
@@ -33,6 +33,31 @@ class MetricsResponse(BaseModel):
     chat_requests: int
     avg_latency_ms: float
     total_tokens: int
+
+
+# ---------- 纯检索（2026-11-03 新增） ----------
+# 动机：一线场景绝大多数问题是「哪份文件写了这条」，不需要 LLM 生成。
+# /chat 每次都要调模型，慢且花钱；/search 只返回命中原文，可由调用方直接展示。
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="检索词或自然语言问题")
+    top_k: int = Field(5, ge=1, le=20, description="返回条数上限")
+    hybrid: bool = Field(True, description="是否启用 BM25 + 向量 RRF 混合检索")
+
+
+class SearchHit(BaseModel):
+    rank: int          # 1-based 排名，便于前端直接渲染
+    score: float       # 融合分（hybrid=True 时为 RRF 累加分）
+    document_id: int
+    title: str         # 文档标题，即「出处」
+    seq: int           # 该 chunk 在文档内的序号，用于定位段落
+    text: str          # chunk 原文，不做截断：查出处场景需要完整段落
+
+
+class SearchResponse(BaseModel):
+    query: str
+    top_k: int
+    hits: List[SearchHit]
+    latency_ms: int
 
 
 class EvalResult(BaseModel):

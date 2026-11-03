@@ -1,5 +1,6 @@
 """FastAPI 入口：路由层 + Depends 注入 + 全局鉴权 + 统一错误信封 + lifespan。"""
 import json
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -16,12 +17,15 @@ from app.eval import run_eval
 from app.llm import get_llm_provider
 from app.metrics import metrics
 from app.rag import chat as rag_chat, ingest
-from app.retriever import Retriever, chunk_text
+from app.retriever import Retriever, chunk_text, get_doc_titles
 from app.schemas import (
     ChatRequest,
     ChatResponse,
     IngestRequest,
     MetricsResponse,
+    SearchHit,
+    SearchRequest,
+    SearchResponse,
 )
 from app.seed import reseed_if_needed
 
@@ -146,6 +150,46 @@ def chat_endpoint(req: ChatRequest, session: Session = Depends(get_session)):
         citations=citations,
         latency_ms=latency,
         model=f"{settings.llm_provider}:{settings.llm_model}",
+    )
+
+
+@app.post("/search", response_model=SearchResponse)
+def search_endpoint(req: SearchRequest, session: Session = Depends(get_session)):
+    """纯检索：只返回命中片段与出处，不调用 LLM（2026-11-03 新增）。
+
+    与 /chat 的分工：
+    - /search：秒级、零 LLM 成本，答「哪份文件写了这条规定」。一线高频场景。
+    - /chat：慢、消耗模型额度，答「所以到底该怎么办」。适合复杂追问。
+    返回 text 为完整 chunk 原文，便于直接作为「出处」展示，不做摘要截断。
+    """
+    t0 = time.time()
+    embedder = get_embedder()
+    retriever = Retriever(embedder, settings.top_k)
+    hits = retriever.search(
+        session,
+        embedder.embed_query(req.query),
+        req.top_k,
+        query_text=req.query,
+        use_hybrid=req.hybrid,
+    )
+    doc_titles = get_doc_titles(session)
+    payload = [
+        SearchHit(
+            rank=i,
+            score=round(float(score), 6),
+            document_id=chunk.document_id,
+            title=doc_titles.get(chunk.document_id, "未知"),
+            seq=chunk.seq,
+            text=chunk.text,
+        )
+        for i, (score, chunk) in enumerate(hits, start=1)
+    ]
+    metrics.record_request()
+    return SearchResponse(
+        query=req.query,
+        top_k=req.top_k,
+        hits=payload,
+        latency_ms=int((time.time() - t0) * 1000),
     )
 
 

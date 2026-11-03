@@ -104,3 +104,69 @@ def test_validation_422():
     r = client.post("/ingest", json={"content": "缺少 title"}, headers=HEADERS)
     assert r.status_code == 422
     assert r.json()["error"]["code"] == 422
+
+
+# ---------- /search 纯检索（2026-11-03 新增） ----------
+# 这组测试守的是三件事：鉴权不因新增路由而漏、返回的是可作「出处」的完整原文、
+# 以及它确实没走 LLM（否则和 /chat 分成两条路就没意义）。
+
+
+def test_search_requires_api_key():
+    r = client.post("/search", json={"query": "门店"})
+    assert r.status_code == 401
+    assert r.json()["error"]["code"] == 401
+
+
+def test_search_returns_hits_with_source():
+    r = client.post("/search", json={"query": "天鹅公主有多少家门店？"}, headers=HEADERS)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["query"] == "天鹅公主有多少家门店？"
+    assert body["hits"], "检索必须有命中，空结果说明索引没建好"
+    first = body["hits"][0]
+    assert first["rank"] == 1
+    assert first["title"] and first["title"] != "未知", "出处标题不能为空或兜底值"
+    assert first["text"].strip(), "原文不能为空"
+    assert isinstance(first["score"], float)
+    # rank 连续递增，前端可直接按序渲染
+    assert [h["rank"] for h in body["hits"]] == list(range(1, len(body["hits"]) + 1))
+
+
+def test_search_returns_untruncated_text():
+    """/search 的用途是给出处，chunk 原文不能被截断成片段。"""
+    from sqlmodel import select
+
+    from app.models import Chunk
+
+    r = client.post("/search", json={"query": "报损", "top_k": 3}, headers=HEADERS)
+    assert r.status_code == 200
+    top = r.json()["hits"][0]
+    with Session(engine) as s:
+        row = s.exec(
+            select(Chunk).where(
+                Chunk.document_id == top["document_id"], Chunk.seq == top["seq"]
+            )
+        ).first()
+    assert row is not None
+    assert row.text == top["text"], "返回文本与库内原文不一致（被截断或改写）"
+
+
+def test_search_skips_llm():
+    """/search 不得计入 chat_requests —— 它走的是纯检索，没调模型。"""
+    before = client.get("/metrics", headers=HEADERS).json()["chat_requests"]
+    r = client.post("/search", json={"query": "加盟要多少钱"}, headers=HEADERS)
+    assert r.status_code == 200
+    after = client.get("/metrics", headers=HEADERS).json()["chat_requests"]
+    assert after == before, "/search 不应产生 chat 计数"
+
+
+def test_search_top_k_bounds():
+    for bad in (0, 21):
+        r = client.post("/search", json={"query": "门店", "top_k": bad}, headers=HEADERS)
+        assert r.status_code == 422, f"top_k={bad} 应被拒绝"
+        assert r.json()["error"]["code"] == 422
+
+
+def test_search_empty_query_422():
+    r = client.post("/search", json={"query": ""}, headers=HEADERS)
+    assert r.status_code == 422
