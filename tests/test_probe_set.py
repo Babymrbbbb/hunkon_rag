@@ -44,6 +44,19 @@ def test_probe_entries_target_existing_docs():
     assert not missing, f"探针集指向了不存在的文档：{missing}"
 
 
+def test_probe_set_has_enough_samples():
+    """样本量下限：12 条时测出的百分比不可信（2026-11-03 实测，75% 扩样后回落到 61.3%）。"""
+    n = len(_probes())
+    assert n >= 30, f"探针集只有 {n} 条，低于 30 条时百分比波动过大，不足以对外引用"
+
+
+def test_every_corpus_doc_is_probed():
+    """每篇语料至少被问一次，否则该文档的检索质量无人观测。"""
+    probed = {p["expected_doc"] for p in _probes()}
+    uncovered = sorted(_corpus_titles() - probed)
+    assert not uncovered, f"以下文档没有任何探针覆盖，质量盲区：{uncovered}"
+
+
 def test_probe_questions_are_unique_and_documented():
     probes = _probes()
     questions = [p["question"] for p in probes]

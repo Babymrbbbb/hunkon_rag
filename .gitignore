@@ -25,3 +25,9 @@ data/wiki/
 
 # 本地 ONNX 向量模型（613 MB，绝不入库）
 _models/
+
+# 评测报告：本地产物，每跑一次就多几个文件，不入库以免弄脏工作区
+# （2026-11-03）reports/history.json 例外保留：它是评测趋势的证据，
+# 且 /reports/history.json 路由与监控看板依赖它，缺失时路由会返回空数组。
+reports/eval_report_*.md
+reports/probe_*.md
