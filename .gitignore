@@ -22,3 +22,6 @@ venv/
 
 # 运行时生成的 wiki 聚合层缓存（eval 时自动重建）
 data/wiki/
+
+# 本地 ONNX 向量模型（613 MB，绝不入库）
+_models/

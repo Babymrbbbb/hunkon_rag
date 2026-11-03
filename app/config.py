@@ -22,12 +22,18 @@ class Settings(BaseSettings):
     # 部分账户/模型会忽略该开关（仍走 thinking），此时依赖上面的 max_tokens 余量。
     llm_disable_reasoning: bool = True
 
-    # 向量化供应商（mock | real）
+    # 向量化供应商（mock | local | real）
+    # - mock ：哈希词袋，离线确定性，CI 默认
+    # - local：本地 ONNX 量化模型（CPU 推理，数据不出机）
+    # - real ：OpenAI 兼容 /embeddings 接口
     embedder_provider: str = "mock"
     embedder_base_url: str = "https://api.openai.com/v1"
     embedder_api_key: str = ""
     embedder_model: str = "text-embedding-3-small"
+    # mock 的向量维度（仅 mock 生效；local/real 的维度由模型决定）
     embed_dim: int = 256
+    # 本地模型目录：相对路径按项目根解析；模型缺失时 local 会自动降级 mock
+    embedder_local_dir: str = "_models/qwen3-embedding-0.6b"
 
     # RAG 参数
     chunk_size: int = 300

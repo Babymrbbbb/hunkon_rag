@@ -138,7 +138,7 @@ def chat(
         wiki_hits = wiki.search(question)
 
     # RAG 常规路径：混合检索召回原始 chunk
-    qvec = embedder.embed(question)
+    qvec = embedder.embed_query(question)
     hits = retriever.search(session, qvec, top_k, query_text=question, use_hybrid=True)
 
     doc_titles = get_doc_titles(session)

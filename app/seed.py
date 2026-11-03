@@ -9,10 +9,21 @@ from pathlib import Path
 from sqlmodel import Session, func, select
 
 from app.config import settings
+from app.embedder import get_embedder
 from app.models import Chunk, Document, Meta
 from app.rag import ingest
 
 _HASH_KEY = "corpus_hash"
+_FP_KEY = "embedder_fingerprint"
+
+
+def embedder_fingerprint() -> str:
+    """当前向量化实现的指纹（如 mock:256 / local:1024）。
+
+    维度或模型变了，库里已存的向量就与新查询向量不可比（cosine 因长度不等恒为 0），
+    因此指纹必须参与「是否需要重建」的判断，否则换模型后会静默失效。
+    """
+    return get_embedder().fingerprint
 
 
 def corpus_dir() -> Path:
@@ -49,25 +60,27 @@ def _clear_index(session: Session) -> None:
 
 
 def rebuild_corpus(session: Session) -> int:
-    """强制重建：清空旧索引（含已删除文档的残留 chunk）→ 重新灌库 → 写入最新哈希。"""
+    """强制重建：清空旧索引（含已删除文档的残留 chunk）→ 重新灌库 → 写入最新哈希与向量指纹。"""
     _clear_index(session)
     n = seed_corpus(session)
     # upsert：先删除旧哈希再写入，避免重复启动时 UNIQUE 冲突（2026-10-30 压测时发现）
-    for old in session.exec(select(Meta).where(Meta.key == _HASH_KEY)).all():
+    for old in session.exec(select(Meta).where(Meta.key.in_([_HASH_KEY, _FP_KEY]))).all():
         session.delete(old)
     session.add(Meta(key=_HASH_KEY, value=corpus_hash()))
+    session.add(Meta(key=_FP_KEY, value=embedder_fingerprint()))
     session.commit()
     return n
 
 
 def reseed_if_needed(session: Session) -> bool:
-    """库为空或与源不一致时自动重建；一致则跳过。返回是否执行了重建。"""
+    """库为空、源改动、或向量模型变更时自动重建；全部一致则跳过。"""
     if not settings.auto_seed:
         return False
-    current = corpus_hash()
-    stored = session.exec(select(Meta.value).where(Meta.key == _HASH_KEY)).first()
+    current_hash = corpus_hash()
+    stored_hash = session.exec(select(Meta.value).where(Meta.key == _HASH_KEY)).first()
+    stored_fp = session.exec(select(Meta.value).where(Meta.key == _FP_KEY)).first()
     doc_count = session.exec(select(func.count()).select_from(Document)).one()
-    if stored == current and doc_count > 0:
+    if stored_hash == current_hash and doc_count > 0 and stored_fp == embedder_fingerprint():
         return False
     rebuild_corpus(session)
     return True

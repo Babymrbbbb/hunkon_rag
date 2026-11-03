@@ -44,7 +44,7 @@ def run_eval(session: Session) -> EvalReport:
 
         # 命中层级拆分：聚合页命中 / 原始文档命中（合计才是 retrieval_hit）
         wiki_titles = [p.title for p in wiki.search(question)]
-        qvec = embedder.embed(question)
+        qvec = embedder.embed_query(question)
         # 与 chat 保持一致：传 query_text 才走混合检索（此前漏传导致这里只算了向量路）
         hits = retriever.search(session, qvec, 3, query_text=question, use_hybrid=True)
         doc_titles_map = get_doc_titles(session)

@@ -1,0 +1,8 @@
+# 本地 ONNX 向量化（RAG_EMBEDDER_PROVIDER=local）的可选依赖。
+# CI 不安装本文件：CI 固定使用 mock 向量以保证确定性与速度。
+# 安装：pip install -r requirements-local.txt
+# 模型：把量化模型目录（含 model_quantized.onnx + tokenizer.json）放到
+#       _models/qwen3-embedding-0.6b/，或用 RAG_EMBEDDER_LOCAL_DIR 指向已有目录。
+onnxruntime>=1.17,<2.0
+tokenizers>=0.15,<1.0
+numpy>=1.24

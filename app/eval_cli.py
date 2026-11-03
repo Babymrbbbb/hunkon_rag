@@ -32,17 +32,23 @@ from pathlib import Path
 # 因此这里不能像常规那样在 main() 里处理参数后再设置，需要在模块顶部先解析一次。
 _pre_ap = argparse.ArgumentParser(add_help=False)
 _pre_ap.add_argument("--mock", action="store_true")
+_pre_ap.add_argument("--embedder", choices=["mock", "local", "real"], default=None)
 _pre_args, _ = _pre_ap.parse_known_args()
 if _pre_args.mock:
     os.environ["RAG_LLM_PROVIDER"] = "mock"
     os.environ["RAG_WIKI_COMPILER"] = "rule"
     os.environ["RAG_EMBEDDER_PROVIDER"] = "mock"
+# --embedder 显式指定时优先级最高：便于用「LLM mock + 真向量 local」做对照评测，
+# 避免真实 LLM 的限流与随机性污染「向量 provider 换了有没有变好」这一判断。
+if _pre_args.embedder:
+    os.environ["RAG_EMBEDDER_PROVIDER"] = _pre_args.embedder
 
 from sqlmodel import Session
 
+from app.config import settings
 from app.database import engine, init_db
 from app.eval import run_eval
-from app.seed import force_rebuild
+from app.seed import embedder_fingerprint, force_rebuild
 
 REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 
@@ -70,6 +76,8 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="输出 JSON 到 stdout")
     ap.add_argument("--mock", action="store_true",
                     help="强制离线 MockProvider + rule 编译（已在模块顶部生效）")
+    ap.add_argument("--embedder", choices=["mock", "local", "real"], default=None,
+                    help="覆盖向量 provider（用于 mock 向量与真向量的对照评测）")
     args = ap.parse_args()
 
     init_db()
@@ -91,6 +99,8 @@ def main() -> int:
         "wiki_hit_rate": report.wiki_hit_rate,
         "threshold": args.threshold,
         "passed": report.retrieval_hit_rate >= args.threshold,
+        "embedder": settings.embedder_provider,
+        "embedder_fingerprint": embedder_fingerprint(),
     }
 
     # 写时间序列历史

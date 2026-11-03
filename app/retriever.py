@@ -11,6 +11,7 @@
 import json
 import math
 import re
+import sys
 from collections import Counter, defaultdict
 from typing import List, Tuple
 
@@ -119,6 +120,33 @@ def cosine(a: List[float], b: List[float]) -> float:
     return dot / (na * nb)
 
 
+_DIM_WARNED = False
+
+
+def _check_dim_once(query_vec: List[float], chunks: List[Chunk]) -> None:
+    """向量维度不一致时只告警一次，不中断服务。
+
+    场景：换 embedding 模型（如 mock 256 维 → local 1024 维）却没重建索引。
+    此时 cosine 因长度不等恒返回 0（见 cosine 实现），向量路静默失效、只剩关键词路，
+    表现为「检索突然变差但不报错」——很难排查，所以这里显式喊出来。
+    正常路径由 seed.py 的 embedder 指纹校验自动重建，不会走到这个告警。
+    """
+    global _DIM_WARNED
+    if _DIM_WARNED or not query_vec or not chunks:
+        return
+    try:
+        stored = len(json.loads(chunks[0].embedding))
+    except Exception:
+        return
+    if stored and stored != len(query_vec):
+        _DIM_WARNED = True
+        print(
+            f"[retriever] 向量维度不一致：库内 {stored} 维 / 当前模型 {len(query_vec)} 维。"
+            "向量检索将静默失效（余弦恒为 0），请重建索引。",
+            file=sys.stderr,
+        )
+
+
 # ---------- RRF 融合 ----------
 
 def rrf_fuse(ranked_lists: List[List[Tuple[float, int]]], k: int = 60, top_k: int = 3) -> List[Tuple[float, int]]:
@@ -223,7 +251,8 @@ class Retriever:
         self.use_hybrid = use_hybrid
 
     def embed_query(self, query: str) -> List[float]:
-        return self.embedder.embed(query)
+        # 非对称模型（qwen3）查询要加指令前缀，不能复用文档编码
+        return self.embedder.embed_query(query)
 
     def search(
         self,
@@ -247,6 +276,7 @@ class Retriever:
             return []
 
         # 路1：向量余弦（复用缓存的全量向量，避免逐条 json.loads）
+        _check_dim_once(query_vec, chunks)
         vec_ranked: List[Tuple[float, int]] = []
         for c in chunks:
             try:

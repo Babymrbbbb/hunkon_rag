@@ -33,10 +33,25 @@
 | 数据模型 | SQLModel（SQLAlchemy + Pydantic v2） |
 | 配置 | pydantic-settings（`RAG_` 前缀，env / `.env` 覆盖） |
 | 存储 | SQLite + SQLModel（生产可换 pgvector） |
-| LLM / 向量化 | **供应商解耦**：`LLMProvider` / `Embedder` 抽象，内置 `Mock`（离线）+ `OpenAICompatible`（真实） |
-| 检索 | 文本切分 + 向量余弦召回 top-k |
+| LLM / 向量化 | **供应商解耦**：`LLMProvider` / `Embedder` 抽象；向量化三档 `mock`（哈希词袋，CI 用）/ `local`（本地 ONNX，真语义）/ `real`（OpenAI 兼容接口） |
+| 检索 | 文本切分 + 向量余弦召回 top-k + 倒排 BM25-lite，RRF 融合 |
 | 测试 / 评测 | pytest + golden-set 评测脚本 |
 | 部署 | Docker 分层构建 + docker-compose |
+
+### 向量化三档（2026-11-03 新增 local）
+
+| provider | 实现 | 维度 | 用途 |
+|---|---|---|---|
+| `mock` | MD5 分词哈希词袋 | 256 | CI 与单元测试（确定性、零依赖、离线可复现） |
+| `local` | 本地量化 ONNX（qwen3-embedding-0.6b） | 1024 | 本地/演示的真语义检索，CPU 推理，数据不出机 |
+| `real` | OpenAI 兼容 `/embeddings` | 随模型 | 接云端向量服务 |
+
+- 切换方式：`RAG_EMBEDDER_PROVIDER=local` + `RAG_EMBEDDER_LOCAL_DIR=<模型目录>`
+- 依赖：`pip install -r requirements-local.txt`（CI 不装，CI 固定用 mock）
+- **换 provider 会自动重建索引**：`seed.py` 把指纹（如 `local:1024`）写入 `Meta` 表，
+  启动与评测时比对，不一致即重建——避免「旧库 256 维 + 新查询 1024 维」导致余弦恒为 0 的静默失效
+- 模型缺失或依赖缺失时自动降级 mock，服务不中断
+- 对照评测：`python -m app.eval_cli --mock --embedder local`（LLM/聚合页保持 mock，只换向量）
 
 ---
 
