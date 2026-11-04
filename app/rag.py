@@ -147,6 +147,22 @@ def chat(
     hits = retriever.search(session, qvec, top_k, query_text=search_question, use_hybrid=True)
 
     doc_titles = get_doc_titles(session)
+
+    # CRAG 自纠错（2026-11-04 新增，默认关闭）：LLM 判断上下文相关性，
+    # 不足则改写查询重试一次。仅 RAG_CRAG=1 且真实 LLM 时生效，否则原样返回。
+    from app.crag import corrective_rerank
+
+    hits, _used_rewrite, _retried = corrective_rerank(
+        question,
+        hits,
+        session,
+        embedder,
+        retriever,
+        top_k,
+        search_question,
+        doc_titles,
+    )
+
     chunk_context = "\n\n".join(
         f"[资料{i+1}]（来自《{doc_titles.get(chunk.document_id, '未知')}》）\n{chunk.text}"
         for i, (_score, chunk) in enumerate(hits)

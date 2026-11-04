@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     # 模型缺失时 local 自动降级 score（不伪造能力）
     reranker: str = "score"
 
+    # CRAG 自纠错：0=关闭（默认） | 1=开启（LLM 判断上下文相关性，不足则改写重试）
+    crag: bool = False
+
     # 真实语料目录：默认 data/corpus（脱敏展示）；可指向本地生产知识库（如 D:\WorkBuddy知识库\wiki）
     corpus_dir: str = "data/corpus"
 
