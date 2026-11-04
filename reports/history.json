@@ -118,5 +118,17 @@
     "passed": true,
     "embedder": "mock",
     "embedder_fingerprint": "mock:256"
+  },
+  {
+    "timestamp": "2026-11-04T11:31:12",
+    "total": 8,
+    "retrieval_hit_rate": 1.0,
+    "faithfulness_rate": 0.875,
+    "doc_hit_rate": 1.0,
+    "wiki_hit_rate": 0.0,
+    "threshold": 0.95,
+    "passed": true,
+    "embedder": "mock",
+    "embedder_fingerprint": "mock:256"
   }
 ]
