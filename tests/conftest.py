@@ -26,3 +26,5 @@ os.environ["RAG_EMBEDDER_PROVIDER"] = "mock"
 os.environ["RAG_WIKI_COMPILER"] = "rule"
 os.environ["RAG_AUTO_SEED"] = "false"
 os.environ["RAG_CORPUS_DIR"] = "data/corpus"
+# 语义缓存：测试默认禁用，避免写入 data/semantic_cache.db 污染仓库
+os.environ["RAG_SEMANTIC_CACHE"] = "0"

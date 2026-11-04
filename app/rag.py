@@ -168,7 +168,39 @@ def chat(
     context = "\n\n".join(contexts)
     user_msg = f"用户问题：{question}\n\n可参考资料：\n{context}"
 
+    # 语义缓存（2026-11-04 接入）：语义等价的重复问题直接返回历史答案，
+    # 跳过 LLM 调用，节省成本与延迟。命中时仍返回本次检索的 citations 作为引用，
+    # 保证回答可溯源（与生产库语义缓存语义一致）。
+    from app.cache import SemanticCache
+
+    _cache = SemanticCache()
+    cached = _cache.get(qvec, question)
+    if cached is not None:
+        answer, cached_citations, _hit_count, _cached_q = cached
+        latency = int((time.time() - t0) * 1000)
+        approx_tokens = (len(answer) + len(user_msg)) // 4
+        metrics.record_request()
+        metrics.record_chat(latency, approx_tokens)
+        _enqueue_audit(
+            question=question,
+            answer=answer,
+            citations=json.dumps([c.model_dump() for c in citations], ensure_ascii=False),
+        )
+        return answer, citations, latency, approx_tokens
+
     answer = llm.complete(SYSTEM_PROMPT, user_msg)
+
+    # 写入语义缓存（仅真实 LLM 回答才缓存，避免缓存 mock 占位回答）
+    if settings.llm_provider == "real":
+        try:
+            _cache.put(
+                qvec,
+                question,
+                answer,
+                json.dumps([c.model_dump() for c in citations], ensure_ascii=False),
+            )
+        except Exception:
+            pass
 
     latency = int((time.time() - t0) * 1000)
     # token 近似（mock 与真实通用）：字符数 / 4
