@@ -124,6 +124,7 @@ def chat(
     embedder: Embedder = None,
     retriever: Retriever = None,
     use_wiki: bool = True,
+    role: str = "",
 ) -> Tuple[str, List[ChatCitation], int, int]:
     llm = llm or get_llm_provider()
     embedder = embedder or get_embedder()
@@ -147,6 +148,14 @@ def chat(
     hits = retriever.search(session, qvec, top_k, query_text=search_question, use_hybrid=True)
 
     doc_titles = get_doc_titles(session)
+
+    # 多租户 RBAC（2026-11-04 新增）：按角色过滤不可见文档的 chunk。
+    # 仅当显式传入 role 且为有效角色时生效；否则不过滤（兼容旧调用）。
+    if role:
+        from app.rbac import filter_hits_by_role, get_doc_sources
+
+        doc_sources = get_doc_sources(session)
+        hits = filter_hits_by_role(hits, role, doc_sources)
 
     # CRAG 自纠错（2026-11-04 新增，默认关闭）：LLM 判断上下文相关性，
     # 不足则改写查询重试一次。仅 RAG_CRAG=1 且真实 LLM 时生效，否则原样返回。

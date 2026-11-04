@@ -44,6 +44,7 @@
 | 检索 | 文本切分 + 向量余弦召回 top-k + 倒排 BM25-lite，RRF 融合 |
 | 精排 | `app/reranker.py` 可插拔交叉编码器精排（`RAG_RERANK=local` 启用，模型缺失自动降级） |
 | CRAG 自纠错 | `app/crag.py` LLM 判断上下文相关性，不足则改写重试（`RAG_CRAG=1` 启用，默认关） |
+| 多租户 RBAC | `app/rbac.py` 三档角色（staff/franchise/ops）按文档分级过滤检索结果 |
 | 权威口径 | `app/rules.py` 确定性覆盖：读真相源 JSON，LLM 输出错误时强制修正（门店数/冰面包口径） |
 | 语义缓存 | `app/cache.py` SQLite 语义缓存：相似问题直接返回历史答案，跳过 LLM 调用 |
 | 文档解析 | `app/extract.py` 纯标准库抽取 md/txt/xlsx/docx/pdf → Markdown |
@@ -227,6 +228,7 @@ swan_rag/
 │   ├── agg_pages.py     # LLM 批量聚合页生成（权威口径覆盖 + 截断检测）
 │   ├── rewrite.py       # 查询改写（LLM 改写口语化问法，默认关闭，静默降级）
 │   ├── crag.py          # CRAG 自纠错（LLM 判断相关性，不足则改写重试，默认关闭）
+│   ├── rbac.py          # 多租户 RBAC（三档角色按文档分级过滤检索结果）
 │   ├── trace.py         # 可观测埋点（零依赖 Langfuse 协议，采样上报 LLM 调用）
 │   ├── special_pages.py # 特殊页生成（comparison 对比页 / synthesis 综合页）
 │   ├── ingest_conv.py   # 对话沉淀摄入（inbox → 语料，防双写）
@@ -242,6 +244,7 @@ swan_rag/
 │   ├── corpus/          # 知识库（维度映射品牌真实经营切面，14 篇含竞品玛芝莲）
 │   ├── wiki/            # 聚合索引（entity/concept 聚合页，启动自动生成）
 │   ├── business_facts.json / store_facts.json  # 数据真相源
+│   ├── doc_roles.json    # 文档角色映射（多租户 RBAC）
 │   └── eval_golden.json # 评测黄金集
 ├── docs/
 │   └── business-case.md # 业务方案、简历 bullet、叙事框架

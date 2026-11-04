@@ -9,6 +9,12 @@ class Settings(BaseSettings):
     # 全局鉴权
     api_key: str = "dev-secret-key"
 
+    # 多租户 RBAC（2026-11-04 新增）：三档角色各自的 API Key。
+    # 缺省时全部回落到 api_key（兼容旧配置/测试）。
+    api_key_staff: str = "dev-secret-key"
+    api_key_franchise: str = ""
+    api_key_ops: str = ""
+
     # LLM 供应商（mock | real）
     llm_provider: str = "mock"
     llm_base_url: str = "https://api.openai.com/v1"

@@ -16,6 +16,7 @@ from app.embedder import get_embedder
 from app.eval import run_eval
 from app.feedback import FeedbackStore
 from app.llm import get_llm_provider
+from app.rbac import filter_hits_by_role, get_doc_sources, role_for_key
 from app.metrics import metrics
 from app.rag import chat as rag_chat, ingest
 from app.retriever import Retriever, chunk_text, get_doc_titles
@@ -56,14 +57,21 @@ async def get_api_key(request: Request, x_api_key: str = Header(None, alias="X-A
 
     白名单（免鉴权）是为了让面试官打开页面即可体验，不破坏「全局鉴权」的架构叙事：
     /、/docs、/openapi.json、/redoc 均可直接访问；业务接口 /chat 等仍强制 X-API-Key。
+
+    2026-11-04 多租户：key 可以是 staff/franchise/ops 三档之一（见 rbac.role_for_key）。
     """
     if request.url.path in ("/", "/docs", "/openapi.json", "/redoc", "/monitor", "/reports/history.json"):
         return None
-    if not x_api_key or x_api_key != settings.api_key:
+    if not x_api_key or not role_for_key(x_api_key):
         raise HTTPException(
             status_code=http_status.HTTP_401_UNAUTHORIZED, detail="无效或缺失 API Key"
         )
     return x_api_key
+
+
+async def get_current_role(x_api_key: str = Header(None, alias="X-API-Key")) -> str:
+    """返回当前请求的角色（staff/franchise/ops）。供 /chat 与 /search 做数据过滤。"""
+    return role_for_key(x_api_key or "")
 
 
 app = FastAPI(
@@ -139,12 +147,17 @@ def ingest_doc(req: IngestRequest, session: Session = Depends(get_session)):
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat_endpoint(req: ChatRequest, session: Session = Depends(get_session)):
+def chat_endpoint(
+    req: ChatRequest,
+    session: Session = Depends(get_session),
+    role: str = Depends(get_current_role),
+):
     llm = get_llm_provider()
     embedder = get_embedder()
     retriever = Retriever(embedder, settings.top_k)
     answer, citations, latency, _tokens = rag_chat(
-        session, req.question, top_k=req.top_k, llm=llm, embedder=embedder, retriever=retriever
+        session, req.question, top_k=req.top_k, llm=llm, embedder=embedder, retriever=retriever,
+        role=role,
     )
     return ChatResponse(
         answer=answer,
@@ -155,13 +168,19 @@ def chat_endpoint(req: ChatRequest, session: Session = Depends(get_session)):
 
 
 @app.post("/search", response_model=SearchResponse)
-def search_endpoint(req: SearchRequest, session: Session = Depends(get_session)):
+def search_endpoint(
+    req: SearchRequest,
+    session: Session = Depends(get_session),
+    role: str = Depends(get_current_role),
+):
     """纯检索：只返回命中片段与出处，不调用 LLM（2026-11-03 新增）。
 
     与 /chat 的分工：
     - /search：秒级、零 LLM 成本，答「哪份文件写了这条规定」。一线高频场景。
     - /chat：慢、消耗模型额度，答「所以到底该怎么办」。适合复杂追问。
     返回 text 为完整 chunk 原文，便于直接作为「出处」展示，不做摘要截断。
+
+    2026-11-04 多租户：按角色过滤不可见文档的 chunk。
     """
     t0 = time.time()
     embedder = get_embedder()
@@ -178,6 +197,9 @@ def search_endpoint(req: SearchRequest, session: Session = Depends(get_session))
         use_hybrid=req.hybrid,
     )
     doc_titles = get_doc_titles(session)
+    # 多租户过滤：按当前角色剔除不可见文档
+    doc_sources = get_doc_sources(session)
+    hits = filter_hits_by_role(hits, role, doc_sources)
     payload = [
         SearchHit(
             rank=i,
