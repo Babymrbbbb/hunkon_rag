@@ -2,7 +2,7 @@
 
 这是生产知识库 build_search_index.py + build_vector_index.py 的开源复刻等价物：
 - 生产库：构建独立 JSON 倒排索引 + 向量索引文件
-- swan_rag：语料直接灌入 SQLite（document/chunk 表），运行时由 Retriever 构建
+- hunkon_rag：语料直接灌入 SQLite（document/chunk 表），运行时由 Retriever 构建
   内存倒排 + 向量召回。因此「构建索引」= 扫描语料 → ingest → 刷新元信息。
 
 用法：

@@ -1,7 +1,7 @@
 """特殊页生成测试：dry-run 列出、缺实体页失败、prompt 构造。
 
 背景：
-  生产知识库 generate_special_pages.py，swan_rag 移植为 app/special_pages.py。
+  生产知识库 generate_special_pages.py，hunkon_rag 移植为 app/special_pages.py。
   核心：comparison 对比页 + synthesis 综合页，复用 app.llm 抽象。
 """
 import sys
@@ -57,38 +57,38 @@ def test_gen_comparison_missing_entity():
 def test_gen_comparison_mock_success(monkeypatch):
     """mock LLM 回显 prompt 时，应能生成对比页并写入。"""
     # 先构造两个实体页
-    (sp.ENTITY_DIR / "天鹅公主.md").write_text("# 天鹅公主\n\n## 摘要\n品牌\n", encoding="utf-8")
+    (sp.ENTITY_DIR / "Hunkon.md").write_text("# Hunkon\n\n## 摘要\n品牌\n", encoding="utf-8")
     (sp.ENTITY_DIR / "玛芝莲.md").write_text("# 玛芝莲\n\n## 摘要\n竞品\n", encoding="utf-8")
 
     class FakeLLM:
         def complete(self, system, user):
-            return "## 对比维度表\n| 维度 | 天鹅公主 | 玛芝莲 |\n\n## 综合判断\n启示\n\n## 来源列表\n- 天鹅公主.md\n- 玛芝莲.md\n"
+            return "## 对比维度表\n| 维度 | Hunkon | 玛芝莲 |\n\n## 综合判断\n启示\n\n## 来源列表\n- Hunkon.md\n- 玛芝莲.md\n"
 
     monkeypatch.setattr("app.special_pages.get_llm_provider", lambda: FakeLLM())
-    ok, res = sp.gen_comparison("天鹅公主_vs_玛芝莲", "天鹅公主", "玛芝莲")
+    ok, res = sp.gen_comparison("Hunkon_vs_玛芝莲", "Hunkon", "玛芝莲")
     assert ok, f"mock LLM 应成功: {res}"
-    page = sp.COMPARISON_DIR / "天鹅公主_vs_玛芝莲.md"
+    page = sp.COMPARISON_DIR / "Hunkon_vs_玛芝莲.md"
     assert page.exists(), "对比页未写入"
     content = page.read_text(encoding="utf-8")
-    assert "天鹅公主 vs 玛芝莲" in content
+    assert "Hunkon vs 玛芝莲" in content
     assert "对比维度表" in content
 
 
 def test_gen_synthesis_mock_success(monkeypatch):
     """mock LLM 回显时，应能生成综合页并写入。"""
-    (sp.ENTITY_DIR / "天鹅公主.md").write_text("# 天鹅公主\n\n## 摘要\n品牌\n", encoding="utf-8")
+    (sp.ENTITY_DIR / "Hunkon.md").write_text("# Hunkon\n\n## 摘要\n品牌\n", encoding="utf-8")
 
     class FakeLLM:
         def complete(self, system, user):
-            return "## 跨源综合\n综合\n\n## 策略建议\n- 建议1\n- 建议2\n\n## 涉及实体/概念\n- 天鹅公主\n"
+            return "## 跨源综合\n综合\n\n## 策略建议\n- 建议1\n- 建议2\n\n## 涉及实体/概念\n- Hunkon\n"
 
     monkeypatch.setattr("app.special_pages.get_llm_provider", lambda: FakeLLM())
-    ok, res = sp.gen_synthesis("防御策略", [("天鹅公主", "entity")], "天鹅公主防御策略")
+    ok, res = sp.gen_synthesis("防御策略", [("Hunkon", "entity")], "Hunkon 防御策略")
     assert ok, f"mock LLM 应成功: {res}"
     page = sp.SYNTHESIS_DIR / "防御策略.md"
     assert page.exists(), "综合页未写入"
     content = page.read_text(encoding="utf-8")
-    assert "天鹅公主防御策略" in content
+    assert "Hunkon 防御策略" in content
     assert "策略建议" in content
 
 

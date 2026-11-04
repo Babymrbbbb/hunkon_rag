@@ -2,7 +2,7 @@
 
 背景：
   生产级 RAG 的 CRAG 范式：LLM 判断上下文相关性，不足则改写查询重试。
-  swan_rag 实现为 app/crag.py，默认关闭（RAG_CRAG=1 且真实 LLM 时生效）。
+  hunkon_rag 实现为 app/crag.py，默认关闭（RAG_CRAG=1 且真实 LLM 时生效）。
 """
 import sys
 from pathlib import Path
@@ -30,7 +30,7 @@ class _FakeDoc:
 
 
 def _hits():
-    return [(0.9, _FakeChunk(1, "天鹅公主有 47 家门店，其中清远 40 家。"))]
+    return [(0.9, _FakeChunk(1, "Hunkon 有 47 家门店，其中清远 40 家。"))]
 
 
 def _doc_titles():
@@ -62,7 +62,7 @@ def test_grade_relevant(monkeypatch):
             return "relevant"
 
     monkeypatch.setattr("app.llm.get_llm_provider", lambda: FakeLLM())
-    assert _grade("天鹅公主有多少家门店？", "天鹅公主有 47 家门店") == "relevant"
+    assert _grade("Hunkon 有多少家门店？", "Hunkon 有 47 家门店") == "relevant"
 
 
 def test_grade_irrelevant(monkeypatch):
@@ -71,7 +71,7 @@ def test_grade_irrelevant(monkeypatch):
             return "irrelevant"
 
     monkeypatch.setattr("app.llm.get_llm_provider", lambda: FakeLLM())
-    assert _grade("金粒门主打什么？", "天鹅公主有 47 家门店") == "irrelevant"
+    assert _grade("金粒门主打什么？", "Hunkon 有 47 家门店") == "irrelevant"
 
 
 def test_grade_ambiguous(monkeypatch):
@@ -98,7 +98,7 @@ def test_rewrite_failure_returns_original(monkeypatch):
             raise RuntimeError("429")
 
     monkeypatch.setattr("app.llm.get_llm_provider", lambda: BoomLLM())
-    assert _rewrite("天鹅公主有多少家门店？") == "天鹅公主有多少家门店？"
+    assert _rewrite("Hunkon 有多少家门店？") == "Hunkon 有多少家门店？"
 
 
 def test_rewrite_mock_returns_original():
@@ -108,7 +108,7 @@ def test_rewrite_mock_returns_original():
     old_provider = settings.llm_provider
     settings.llm_provider = "mock"
     try:
-        r = _rewrite("天鹅公主有多少家门店？")
+        r = _rewrite("Hunkon 有多少家门店？")
         assert r != "", "改写不应返回空"
     finally:
         settings.llm_provider = old_provider
@@ -157,20 +157,20 @@ def test_crag_irrelevant_rewrites_and_retries(monkeypatch):
             if "检索质量评估器" in system:
                 return "irrelevant"
             if "改写" in system:
-                return "天鹅公主一共有多少家门店？"
+                return "Hunkon 一共有多少家门店？"
             return ""
 
-    new_hits = [(0.95, _FakeChunk(2, "天鹅公主全国 47 家门店"))]
+    new_hits = [(0.95, _FakeChunk(2, "Hunkon 全国 47 家门店"))]
 
     monkeypatch.setattr("app.llm.get_llm_provider", lambda: FakeLLM())
     hits, used, retried = corrective_rerank(
-        "天鹅公主有多少家门店？",
+        "Hunkon 有多少家门店？",
         _hits(),
         None,
         _FakeEmbedder(),
         _FakeRetriever(new_hits),
         3,
-        "天鹅公主有多少家门店？",
+        "Hunkon 有多少家门店？",
         _doc_titles(),
     )
     assert used is True and retried is True

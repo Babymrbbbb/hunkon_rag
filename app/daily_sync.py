@@ -6,8 +6,8 @@
   3. 生成当日同步报告（data/sync_report.txt）
 
 与生产库差异：
-  - 生产库源库是 D:\\天鹅公主知识库（绝对路径）+ 11 子库分类 + build_kb.py
-  - swan_rag 源是 settings.corpus_dir（相对路径）+ scripts/build_index.py
+  - 生产库源库是 D:\\Hunkon 知识库（绝对路径）+ 11 子库分类 + build_kb.py
+  - hunkon_rag 源是 settings.corpus_dir（相对路径）+ scripts/build_index.py
 
 用法：
   python -m app.daily_sync             # 检测 + 自动重建 + 报告
@@ -78,7 +78,7 @@ def main() -> int:
     new = scan_source()
     lines = [
         "=" * 50,
-        "swan_rag · 每日同步报告",
+        "hunkon_rag · 每日同步报告",
         "运行时间: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "语料目录: " + str(corpus_dir()),
         "=" * 50,

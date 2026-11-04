@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>天鹅公主 · RAG 知识助手</title>
+<title>Hunkon · RAG 知识助手</title>
 <style>
   :root{
     --bg:#0c0c0e; --panel:#16161a; --panel2:#1d1d22;
@@ -80,7 +80,7 @@
 <body>
   <header>
     <div class="logo"></div>
-    <h1>天鹅公主 · <span>RAG 知识助手</span></h1>
+    <h1>Hunkon · <span>RAG 知识助手</span></h1>
     <div class="sub">
       <span id="model-label">检索增强生成</span>
       <div class="actions">
@@ -91,14 +91,14 @@
 
   <div class="wrap">
     <div class="chips" id="chips">
-      <div class="chip">天鹅公主是哪个城市的品牌？</div>
+      <div class="chip">Hunkon 是哪个城市的品牌？</div>
       <div class="chip">2026 夏季推出了哪几款新品？</div>
       <div class="chip">目前有多少家门店？</div>
       <div class="chip">竞品金粒门的干货类产品有哪些？</div>
     </div>
     <div id="log"></div>
     <div class="inputbar">
-      <textarea id="q" placeholder="输入你关于天鹅公主的问题，回车发送…"></textarea>
+      <textarea id="q" placeholder="输入你关于Hunkon 的问题，回车发送…"></textarea>
       <button class="send" id="send">发送</button>
     </div>
   </div>
@@ -110,7 +110,7 @@ const q = document.getElementById("q");
 const sendBtn = document.getElementById("send");
 
 // ---------- 多轮历史（localStorage） ----------
-const HISTORY_KEY = "swan_rag_history";
+const HISTORY_KEY = "hunkon_rag_history";
 let history = [];
 try{ history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }catch(e){ history = []; }
 
@@ -238,12 +238,12 @@ document.getElementById("clearBtn").onclick = ()=>{
   history = [];
   saveHistory();
   log.innerHTML = "";
-  addMsg("bot", "你好，我是天鹅公主 AI 知识助手。试试下面的问题，或随便问点什么 👇", null);
+  addMsg("bot", "你好，我是Hunkon AI 知识助手。试试下面的问题，或随便问点什么 👇", null);
 };
 
 // ---------- 恢复历史 ----------
 if(history.length === 0){
-  addMsg("bot", "你好，我是天鹅公主 AI 知识助手。试试下面的问题，或随便问点什么 👇", null, "检索增强生成 · 回答均附资料来源");
+  addMsg("bot", "你好，我是Hunkon AI 知识助手。试试下面的问题，或随便问点什么 👇", null, "检索增强生成 · 回答均附资料来源");
 }else{
   for(const item of history){
     if(item.role === "user"){

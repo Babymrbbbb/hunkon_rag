@@ -1,4 +1,4 @@
-# swan_rag · Kubernetes 部署手册
+# hunkon_rag · Kubernetes 部署手册
 
 > **诚实标注**：本手册对应的 K8s 清单（`k8s/` 目录）已按生产规范编写（Deployment / Service / HPA / Ingress / Secret），
 > **但未在真实集群中执行**——编写环境（Windows 本机）无 Docker 守护进程，无法启动 kind/minikube 本地集群。
@@ -15,8 +15,8 @@
                     │                                          │
   Ingress ──▶ Service ──▶ Deployment (2+ 副本)                 │
   (rag.example.com)  │         │                              │
-                    │         ├── Pod: swan-rag (FastAPI:8000) │
-                    │         ├── Pod: swan-rag               │
+                    │         ├── Pod: hunkon-rag (FastAPI:8000) │
+                    │         ├── Pod: hunkon-rag               │
                     │         └── ...（HPA 自动扩到最多 6）     │
                     │                                          │
                     │  HorizontalPodAutoscaler                 │
@@ -48,11 +48,11 @@
 ## 三、构建镜像
 
 ```bash
-# 在 swan_rag 仓库根目录
-docker build -t swan-rag:latest .
+# 在 hunkon_rag 仓库根目录
+docker build -t hunkon-rag:latest .
 ```
 
-> 若推送到远程仓库（如 Docker Hub / 云厂商 ACR），改为 `docker build -t <你的镜像仓库>/swan-rag:latest .` 并 push，
+> 若推送到远程仓库（如 Docker Hub / 云厂商 ACR），改为 `docker build -t <你的镜像仓库>/hunkon-rag:latest .` 并 push，
 > 然后修改 `k8s/deployment.yaml` 的 `image` 字段。
 
 ---
@@ -89,22 +89,22 @@ kubectl apply -f k8s/ingress.yaml
 
 ```bash
 # 查看 Pod 状态（等待 Running + Ready 1/1）
-kubectl get pods -l app=swan-rag
+kubectl get pods -l app=hunkon-rag
 
 # 查看 Service
-kubectl get svc swan-rag
+kubectl get svc hunkon-rag
 
 # 查看 HPA 状态
-kubectl get hpa swan-rag
+kubectl get hpa hunkon-rag
 
 # 集群内访问（进入任意 Pod curl 服务）
-kubectl exec -it <pod名> -- curl http://swan-rag/health
+kubectl exec -it <pod名> -- curl http://hunkon-rag/health
 
 # 查看日志
-kubectl logs -l app=swan-rag
+kubectl logs -l app=hunkon-rag
 
 # 查看 HPA 是否生效（CPU 使用率）
-kubectl top pods -l app=swan-rag
+kubectl top pods -l app=hunkon-rag
 ```
 
 预期 `/health` 返回：
@@ -119,7 +119,7 @@ kubectl top pods -l app=swan-rag
 ```bash
 # 制造 CPU 压力（可选：用 hey/locust 压测 /chat 接口）
 # 观察 HPA 是否自动扩容：
-kubectl get hpa swan-rag -w
+kubectl get hpa hunkon-rag -w
 
 # 预期：CPU 超过 70% 后，副本从 2 逐步扩到 3/4/.../6
 # 压力下降后，缩容回 minReplicas

@@ -7,9 +7,9 @@
     模型缺失/加载失败自动降级 ScoreReranker（不伪造能力）
 
 与生产库差异：
-  - 生产库候选是 (doc_id, score)，swan_rag 候选是 (score, Chunk)
-  - 生产库读文档正文（read_doc_content）；swan_rag 直接用 Chunk.text
-  - 生产库环境变量 KB_RERANK；swan_rag 用 RAG_RERANK
+  - 生产库候选是 (doc_id, score)，hunkon_rag 候选是 (score, Chunk)
+  - 生产库读文档正文（read_doc_content）；hunkon_rag 直接用 Chunk.text
+  - 生产库环境变量 KB_RERANK；hunkon_rag 用 RAG_RERANK
 
 用法：
   from app.reranker import get_reranker
@@ -27,7 +27,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # 与生产库 rag_qa.py 保持一致的指令前缀（Qwen3-Reranker 需要 Instruct 格式）
 RERANK_INSTRUCT = (
-    "Given a question about the Swan Noble bakery brand knowledge base, "
+    "Given a question about the Hunkon Noble bakery brand knowledge base, "
     "retrieve relevant passages that answer the question"
 )
 

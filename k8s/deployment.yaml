@@ -1,26 +1,26 @@
-# swan_rag · Kubernetes Deployment
+# hunkon_rag · Kubernetes Deployment
 # 生产规范清单：副本、资源限制、健康检查、环境变量从 Secret 注入。
 # 应用：kubectl apply -f k8s/
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: swan-rag
+  name: hunkon-rag
   labels:
-    app: swan-rag
+    app: hunkon-rag
 spec:
   # 生产建议 ≥2 副本；配合 HPA 可水平扩缩容
   replicas: 2
   selector:
     matchLabels:
-      app: swan-rag
+      app: hunkon-rag
   template:
     metadata:
       labels:
-        app: swan-rag
+        app: hunkon-rag
     spec:
       containers:
-        - name: swan-rag
-          image: swan-rag:latest
+        - name: hunkon-rag
+          image: hunkon-rag:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -30,12 +30,12 @@ spec:
             - name: RAG_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: swan-rag-secret
+                  name: hunkon-rag-secret
                   key: api-key
             - name: RAG_LLM_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: swan-rag-secret
+                  name: hunkon-rag-secret
                   key: llm-api-key
             # 演示默认 mock；生产改为 real 并配 base_url/model
             - name: RAG_LLM_PROVIDER

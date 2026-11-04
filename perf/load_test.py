@@ -1,6 +1,6 @@
 """性能压测 · /chat 接口并发压测脚本
 
-用 Python 标准库并发请求 swan_rag 的 /chat 接口，统计：
+用 Python 标准库并发请求 hunkon_rag 的 /chat 接口，统计：
 - P50 / P95 / P99 延迟
 - QPS（每秒请求数）
 - 错误率
@@ -31,7 +31,7 @@ from pathlib import Path
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
-DEFAULT_QUESTION = "天鹅公主目前一共有多少家门店，主要在哪些城市？"
+DEFAULT_QUESTION = "Hunkon 目前一共有多少家门店，主要在哪些城市？"
 
 
 def send_one(url: str, api_key: str, question: str, timeout: int) -> tuple[int, float, int]:

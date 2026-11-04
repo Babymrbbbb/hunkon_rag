@@ -68,7 +68,7 @@ def _save_history(history: list[dict]) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="swan_rag 评测门禁（LLMOps CI）")
+    ap = argparse.ArgumentParser(description="hunkon_rag 评测门禁（LLMOps CI）")
     # 默认阈值与 CI 保持一致（0.95）。此前本地默认 0.75、CI 用 0.95，
     # 会出现「本地跑绿、推送即红」的假阴性陷阱（2026-11-03 统一）。
     ap.add_argument("--threshold", type=float, default=0.95,
@@ -112,7 +112,7 @@ def main() -> int:
     REPORTS_DIR.mkdir(exist_ok=True)
     report_path = REPORTS_DIR / f"eval_report_{ts}.md"
     lines = [
-        f"# swan_rag 评测报告 · {now.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"# hunkon_rag 评测报告 · {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         f"- 用例总数: {report.total}",
         f"- 召回命中率: **{report.retrieval_hit_rate:.1%}**（阈值 {args.threshold:.0%}）",

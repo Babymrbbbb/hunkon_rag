@@ -9,12 +9,12 @@
 
 与生产库差异：
   - 生产库直连 urllib + 环境变量配置 LLM 端点
-  - swan_rag 复用 app.llm.get_llm_provider()（LLMProvider 抽象，配置化）
-  - 生产库读 _meta/aggregation_index.json；swan_rag 从 data/corpus 扫描构建聚合索引
-  - 生产库用 kb_rules.apply_ruling_overrides；swan_rag 用 app.rules.apply_ruling_overrides
+  - hunkon_rag 复用 app.llm.get_llm_provider()（LLMProvider 抽象，配置化）
+  - 生产库读 _meta/aggregation_index.json；hunkon_rag 从 data/corpus 扫描构建聚合索引
+  - 生产库用 kb_rules.apply_ruling_overrides；hunkon_rag 用 app.rules.apply_ruling_overrides
 
 用法：
-  python -m app.agg_pages --corpus data/corpus --min-sources 2 [--dry-run] [--only 天鹅公主]
+  python -m app.agg_pages --corpus data/corpus --min-sources 2 [--dry-run] [--only Hunkon]
 """
 import argparse
 import json
@@ -38,8 +38,8 @@ CONCEPT_DIR = WIKI_DIR / "concept"
 
 # 品牌实体词表：这些应生成 entity 页
 BRAND_ENTITIES = {
-    "天鹅公主", "玛芝莲", "金粒门", "黑金可颂", "联名桃酥",
-    "荔枝玫瑰冻芝士", "青提冷萃欧包", "天鹅卡",
+    "Hunkon", "玛芝莲", "金粒门", "黑金可颂", "联名桃酥",
+    "荔枝玫瑰冻芝士", "青提冷萃欧包", "Hunkon 卡",
 }
 
 # 实体/概念页的必需字段
@@ -84,8 +84,8 @@ def scan_sources(corpus_dir: Path) -> dict:
             agg[title] = {"type": ptype, "sources": []}
         agg[title]["sources"].append(rel)
     # 把「正文包含其它标题词」的文档挂到对应页。
-    # 用「标题变体」匹配：完整标题（如「品牌介绍：天鹅公主 SWAN NOBLE」）很少出现在
-    # 其它文档正文里，需要拆出裸品牌名/关键词变体（如「天鹅公主」）才能跨引用召回。
+    # 用「标题变体」匹配：完整标题（如「品牌介绍：Hunkon HUNKON NOBLE」）很少出现在
+    # 其它文档正文里，需要拆出裸品牌名/关键词变体（如「Hunkon」）才能跨引用召回。
     variants = {}
     for title in agg:
         vs = {title}
@@ -98,10 +98,14 @@ def scan_sources(corpus_dir: Path) -> dict:
         if "：" in title:
             tail = title.split("：", 1)[1].strip()
             vs.add(tail)
-            # 冒号后部分再去掉英文后缀（如「天鹅公主 SWAN NOBLE」→「天鹅公主」）
+            # 冒号后部分再去掉英文后缀（如「Hunkon HUNKON NOBLE」→「Hunkon」）
             en = re.search(r"[\u4e00-\u9fa5]+", tail)
             if en:
                 vs.add(en.group(0))
+            # 纯英文品牌名（如「Hunkon HUNKON NOBLE」）按空格拆首词作为变体
+            for w in tail.split():
+                if re.fullmatch(r"[A-Za-z]+", w) and len(w) >= 2:
+                    vs.add(w)
         # 含「与」的标题，拆出各部分
         for part in re.split(r"[与、]", title):
             part = part.strip()

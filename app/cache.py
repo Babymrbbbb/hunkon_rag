@@ -6,9 +6,9 @@
   - TTL 过期（默认 7 天），命中计数供分析
   - 可用环境变量关闭（关闭时零开销）
 
-与生产库的差异（适配 swan_rag 配置体系）：
+与生产库的差异（适配 hunkon_rag 配置体系）：
   - 生产库用 os.environ 直接读 KB_CACHE_THRESHOLD / KB_CACHE_TTL / KB_SEMANTIC_CACHE
-  - swan_rag 用 pydantic-settings（RAG_ 前缀），因此这里通过 settings 读取，
+  - hunkon_rag 用 pydantic-settings（RAG_ 前缀），因此这里通过 settings 读取，
     同时保留环境变量直读作为兜底（方便不开 FastAPI 的脚本使用）
 
 用法：

@@ -12,7 +12,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-_TMP = tempfile.mkdtemp(prefix="swan_rag_wiki_test_")
+_TMP = tempfile.mkdtemp(prefix="hunkon_rag_wiki_test_")
 os.environ["RAG_RAG_DB_FILE"] = os.path.join(_TMP, "test.db")
 os.environ["RAG_API_KEY"] = "test-secret-key"
 os.environ["RAG_LLM_PROVIDER"] = "mock"

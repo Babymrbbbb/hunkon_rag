@@ -16,7 +16,7 @@
 import os
 import tempfile
 
-_TMP = tempfile.mkdtemp(prefix="swan_rag_pytest_")
+_TMP = tempfile.mkdtemp(prefix="hunkon_rag_pytest_")
 
 # 直接赋值（不用 setdefault）：必须覆盖开发者本地 .env 的真实配置
 os.environ["RAG_RAG_DB_FILE"] = os.path.join(_TMP, "test.db")

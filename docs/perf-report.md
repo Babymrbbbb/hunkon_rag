@@ -32,7 +32,7 @@
 
 - 硬件：单机 Windows（沙箱）
 - 运行：`uvicorn app.main:app`（单进程，默认配置）
-- 数据库：SQLite（`swan_rag.db`）
+- 数据库：SQLite（`hunkon_rag.db`）
 - 语料：14 篇品牌知识文档（`data/corpus/`）
 - LLM / 向量化：Mock（离线，无网络依赖）
 

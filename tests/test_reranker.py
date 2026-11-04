@@ -1,7 +1,7 @@
 """精排器测试：ScoreReranker 保持原序、LocalOnnxReranker 模型缺失降级、get_reranker 配置。
 
 背景：
-  生产库 rag_qa.py 的 Reranker 体系，swan_rag 移植为 app/reranker.py。
+  生产库 rag_qa.py 的 Reranker 体系，hunkon_rag 移植为 app/reranker.py。
   核心：cross-encoder 精排提升检索质量；模型缺失/失败静默降级，绝不伪造能力。
 """
 import os
@@ -30,7 +30,7 @@ class _FakeChunk:
 
 def _cands():
     return [
-        (0.9, _FakeChunk(1, "天鹅公主有 47 家门店")),
+        (0.9, _FakeChunk(1, "Hunkon 有 47 家门店")),
         (0.8, _FakeChunk(2, "金粒门主打干货类")),
         (0.7, _FakeChunk(3, "冰面包非在售")),
     ]
@@ -43,7 +43,7 @@ def test_abstract_base():
 
 def test_score_reranker_keeps_order():
     rr = ScoreReranker()
-    out = rr.rerank("天鹅公主门店", _cands(), top_k=2)
+    out = rr.rerank("Hunkon 门店", _cands(), top_k=2)
     assert len(out) == 2
     assert out[0][1].id == 1  # 原最高分保持第一
     assert out[1][1].id == 2
@@ -60,7 +60,7 @@ def test_local_reranker_degrades_when_model_missing(monkeypatch):
     # 指向不存在的模型目录
     rr = LocalOnnxReranker(model_dir=ROOT / "_models" / "__not_exist__")
     assert rr.name == "local-cross"
-    out = rr.rerank("天鹅公主门店", _cands(), top_k=2)
+    out = rr.rerank("Hunkon 门店", _cands(), top_k=2)
     # 降级后应保持原序（ScoreReranker 行为）
     assert out[0][1].id == 1
     assert out[1][1].id == 2

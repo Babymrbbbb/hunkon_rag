@@ -1,7 +1,7 @@
 """语义缓存测试：写入、命中、阈值、TTL、禁用、统计、清空。
 
 背景：
-  生产知识库 semantic_cache.py（2026-11-03 P0-3），swan_rag 移植为 app/cache.py。
+  生产知识库 semantic_cache.py（2026-11-03 P0-3），hunkon_rag 移植为 app/cache.py。
   核心：对语义等价的重复问题直接返回历史答案，跳过 LLM 调用。
 """
 import json

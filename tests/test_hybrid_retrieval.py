@@ -13,7 +13,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-_TMP = tempfile.mkdtemp(prefix="swan_rag_hybrid_test_")
+_TMP = tempfile.mkdtemp(prefix="hunkon_rag_hybrid_test_")
 os.environ["RAG_RAG_DB_FILE"] = os.path.join(_TMP, "test.db")
 os.environ["RAG_API_KEY"] = "test-secret-key"
 os.environ["RAG_LLM_PROVIDER"] = "mock"
@@ -34,7 +34,7 @@ from app.retriever import Retriever  # noqa: E402
 DOCS = [
     ("竞品分析：玛芝莲", "玛芝莲是清远本地烘焙品牌，近年建设超级工厂，从区域连锁向供应链平台升维，主打 B 端蛋糕券与政企采购。"),
     ("竞品分析：金粒门", "金粒门是同期崛起的烘焙品牌，主打干货类产品（坚果礼盒、谷物脆、养生粉），以健康零食化差异化切入。"),
-    ("冰面包市场调研", "冰面包非天鹅公主在售产品，市场通行参考值需在 0–4℃ 冷藏保存，保质期通常 3 天。"),
+    ("冰面包市场调研", "冰面包非Hunkon 在售产品，市场通行参考值需在 0–4℃ 冷藏保存，保质期通常 3 天。"),
 ]
 
 

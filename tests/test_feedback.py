@@ -1,7 +1,7 @@
 """反馈闭环测试：写入、查询、统计、导出 golden set。
 
 背景：
-  生产知识库 feedback.py（2026-11-03 P1-1），swan_rag 移植为 app/feedback.py。
+  生产知识库 feedback.py（2026-11-03 P1-1），hunkon_rag 移植为 app/feedback.py。
   核心：对问答结果点赞/点踩，沉淀 golden set 供评测演进。
 """
 import json
@@ -22,11 +22,11 @@ def _store():
 
 def test_add_and_list():
     s = _store()
-    sid = s.add("天鹅公主有多少家门店？", "47 家", [{"title": "门店网络"}], rating=1)
+    sid = s.add("Hunkon 有多少家门店？", "47 家", [{"title": "门店网络"}], rating=1)
     assert sid is not None
     rows = s.list()
     assert len(rows) == 1
-    assert rows[0]["question"] == "天鹅公主有多少家门店？"
+    assert rows[0]["question"] == "Hunkon 有多少家门店？"
     assert rows[0]["answer"] == "47 家"
     assert rows[0]["citations"][0]["title"] == "门店网络"
     assert rows[0]["rating"] == 1

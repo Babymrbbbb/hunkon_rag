@@ -1,6 +1,6 @@
 """知识库自愈合：比对 corpus 内容哈希，库为空或与源不一致时自动重建索引。
 
-动机：swan_rag 的向量索引（swan_rag.db 中的 document/chunk 表）是「源文件 → 灌库脚本」
+动机：hunkon_rag 的向量索引（hunkon_rag.db 中的 document/chunk 表）是「源文件 → 灌库脚本」
 手动生成的产物。此前曾出现「源 .md 已改正，却忘记重跑 seed_corpus.py，导致线上检索
 仍返回旧错数据」的事故。本模块让应用在启动时自动检测源文件漂移并重建，杜绝该类复发。
 """

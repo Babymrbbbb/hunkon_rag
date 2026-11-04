@@ -138,7 +138,7 @@ def test_search_filters_by_role():
     init_db()
     with Session(engine) as s:
         # 灌入两篇文档：普通 + ops
-        ingest(s, title="品牌介绍", content="天鹅公主是清远品牌", source="00_brand.md")
+        ingest(s, title="品牌介绍", content="Hunkon 是清远品牌", source="00_brand.md")
         ingest(s, title="供应链", content="报损率控制在 3% 以内", source="06_supplychain.md")
 
     c = TestClient(app)

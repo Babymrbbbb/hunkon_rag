@@ -1,7 +1,7 @@
 """查询改写测试：开关、可改写判断、质量校验、缓存、降级。
 
 背景：
-  生产知识库 query_rewrite.py（2026-11-03 P0-4），swan_rag 移植为 app/rewrite.py。
+  生产知识库 query_rewrite.py（2026-11-03 P0-4），hunkon_rag 移植为 app/rewrite.py。
   核心：口语化问法经 LLM 改写提升召回；失败静默降级；默认关闭。
 """
 import os
@@ -24,17 +24,17 @@ from app.rewrite import (  # noqa: E402
 
 def test_looks_rewritable():
     assert _looks_rewritable("那家卖坚果礼盒的怎么样？")  # 指代词
-    assert _looks_rewritable("天鹅公主一共有多少家门店？")  # 口语词「多少家」
+    assert _looks_rewritable("Hunkon 一共有多少家门店？")  # 口语词「多少家」
     assert _looks_rewritable("他们最近在干嘛？")  # 指代词 + 短
-    assert not _looks_rewritable("天鹅公主门店网络")  # 规范
+    assert not _looks_rewritable("Hunkon 门店网络")  # 规范
     assert not _looks_rewritable("玛芝莲超级工厂战略")  # 规范
 
 
 def test_keeps_core_terms():
-    assert _keeps_core_terms("天鹅公主有多少家门店？", "天鹅公主共有多少家门店？")
+    assert _keeps_core_terms("Hunkon 有多少家门店？", "Hunkon 共有多少家门店？")
     assert _keeps_core_terms("玛芝莲最近在干嘛？", "玛芝莲最近在做什么？")
-    assert _keeps_core_terms("门店数是多少？", "天鹅公主门店数是多少？")  # 门店 2 字词
-    assert not _keeps_core_terms("天鹅公主有多少家门店？", "请提供更具体的信息")  # 丢关键实词
+    assert _keeps_core_terms("门店数是多少？", "Hunkon 门店数是多少？")  # 门店 2 字词
+    assert not _keeps_core_terms("Hunkon 有多少家门店？", "请提供更具体的信息")  # 丢关键实词
 
 
 def test_cache_put_get():

@@ -1,7 +1,7 @@
 """文档解析模块测试：md/xlsx/docx/pdf 四种格式都能抽取文本。
 
 背景：
-  生产知识库有 kb_extract.py（2026-11-03 v1.1），swan_rag 移植为 app/extract.py。
+  生产知识库有 kb_extract.py（2026-11-03 v1.1），hunkon_rag 移植为 app/extract.py。
   这些测试用纯标准库 zipfile 手工构造最小合法 .docx/.xlsx，避免引入第三方依赖。
   PDF 用文本流（非压缩）构造，验证 Tj/TJ 提取。
 """
@@ -19,7 +19,7 @@ from app.extract import read_text  # noqa: E402
 
 def _write_tmp(suffix: str, content: bytes) -> str:
     """写临时文件，返回路径。"""
-    p = Path(tempfile.mkdtemp(prefix="swan_rag_extract_")) / f"test{suffix}"
+    p = Path(tempfile.mkdtemp(prefix="hunkon_rag_extract_")) / f"test{suffix}"
     p.write_bytes(content)
     return str(p)
 
@@ -97,8 +97,8 @@ def _make_docx() -> bytes:
 # ---------- pdf 构造 ----------
 
 def _make_pdf() -> bytes:
-    """构造最小 PDF：一页含 (Hello) Tj 和 (Swan) Tj。"""
-    content = b"BT /F1 12 Tf 72 720 Td (Hello) Tj 0 -14 Td (Swan) Tj ET"
+    """构造最小 PDF：一页含 (Hello) Tj 和 (Hunkon) Tj。"""
+    content = b"BT /F1 12 Tf 72 720 Td (Hello) Tj 0 -14 Td (Hunkon) Tj ET"
     objects = (
         b"%PDF-1.4\n"
         b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
@@ -147,7 +147,7 @@ def test_read_pdf_text_stream():
     p = _write_tmp(".pdf", _make_pdf())
     txt = read_text(p)
     assert "Hello" in txt, f"PDF 文本流未提取: {txt}"
-    assert "Swan" in txt, f"PDF 文本流未提取: {txt}"
+    assert "Hunkon" in txt, f"PDF 文本流未提取: {txt}"
 
 
 def test_read_pdf_flate_stream():

@@ -2,7 +2,7 @@
 
 背景：
   生产知识库 kb_rules.py 提供「LLM 生成后确定性覆盖」（裁决写了什么就是什么）。
-  swan_rag 移植为 app/rules.py，读取 data/store_facts.json + business_facts.json
+  hunkon_rag 移植为 app/rules.py，读取 data/store_facts.json + business_facts.json
   作为真相源，对输出做同样修正。
 
 覆盖规则：
@@ -21,7 +21,7 @@ from app.rules import apply_ruling_overrides  # noqa: E402
 
 def test_store_total_corrected_from_region_number():
     """「运营 40 家门店」应被修正为 47 家并加注。"""
-    text = "天鹅公主运营 40 家门店，覆盖清远等地。"
+    text = "Hunkon 运营 40 家门店，覆盖清远等地。"
     out = apply_ruling_overrides(text)
     assert "47" in out, f"未修正为权威总数: {out}"
     # 「40」只应出现在澄清说明（外部“40 家”为区域误传），不应作为门店总数
@@ -31,7 +31,7 @@ def test_store_total_corrected_from_region_number():
 
 def test_store_total_kept_when_correct():
     """「全国 47 家门店」应保持不变。"""
-    text = "天鹅公主全国 47 家门店。"
+    text = "Hunkon 全国 47 家门店。"
     out = apply_ruling_overrides(text)
     assert "47" in out
     assert "区域误传" not in out, f"正确口径被误加注: {out}"
@@ -39,7 +39,7 @@ def test_store_total_kept_when_correct():
 
 def test_distribution_injected_when_missing():
     """「47 家门店」但缺分布时，注入权威分布。"""
-    text = "天鹅公主共有 47 家门店。"
+    text = "Hunkon 共有 47 家门店。"
     out = apply_ruling_overrides(text)
     assert "清远" in out, f"未注入城市分布: {out}"
     assert "广州" in out and "肇庆" in out and "佛山" in out, f"分布不完整: {out}"
@@ -47,14 +47,14 @@ def test_distribution_injected_when_missing():
 
 def test_distribution_not_duplicated_when_present():
     """正文已含城市分布时，不重复注入。"""
-    text = "天鹅公主共有 47 家门店（清远 40、广州 4、肇庆 2、佛山 1）。"
+    text = "Hunkon 共有 47 家门店（清远 40、广州 4、肇庆 2、佛山 1）。"
     out = apply_ruling_overrides(text)
     assert out.count("清远") == 1, f"分布被重复注入: {out}"
 
 
 def test_icebread_corrected_from_product():
-    """「冰面包是天鹅公主的夏季爆款系列」应被修正为调研对象。"""
-    text = "冰面包是天鹅公主的夏季爆款系列，需冷藏保存。"
+    """「冰面包是Hunkon 的夏季爆款系列」应被修正为调研对象。"""
+    text = "冰面包是Hunkon 的夏季爆款系列，需冷藏保存。"
     out = apply_ruling_overrides(text)
     assert "在售" in out or "调研对象" in out, f"未修正冰面包口径: {out}"
     assert "爆款系列" not in out, f"仍残留爆款表述: {out}"

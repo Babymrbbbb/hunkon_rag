@@ -74,7 +74,7 @@ def _auth_headers(body_str: str) -> dict:
         "Content-Type": "application/json",
         "Authorization": f"Basic {basic}",
         "X-Langfuse-Sdk-Signature": signature,
-        "X-Langfuse-Sdk-Name": "swan-rag",
+        "X-Langfuse-Sdk-Name": "hunkon-rag",
         "X-Langfuse-Sdk-Version": "1.0.0",
         "X-Langfuse-Sdk-Variant": "zero-dep-py",
     }

@@ -83,7 +83,7 @@ _keeps_core_terms() 质量校验（数字/品牌/窗口词必须保留）
 这种改写完全丢失了查询意图。为此实现 `_keeps_core_terms()` 质量校验：
 
 1. **数字必须保留**（如 47、13、3.9）
-2. **品牌名必须保留**（天鹅公主 / 玛芝莲 / 金首信 / 延小保）
+2. **品牌名必须保留**（Hunkon / 玛芝莲 / 金首信 / 延小保）
 3. **2-3 字窗口词至少一个保留**（用滑动窗口提取，避免整段贪婪匹配）
 
 ```python
@@ -92,7 +92,7 @@ def _keeps_core_terms(original, rewritten):
     for n in nums:
         if n in rewritten:
             return True
-    for brand in ("天鹅公主", "玛芝莲", "金首信", "延小保"):
+    for brand in ("Hunkon", "玛芝莲", "金首信", "延小保"):
         if brand in original and brand in rewritten:
             return True
     text = re.sub(r"[^\u4e00-\u9fff]", "", original)
@@ -122,8 +122,8 @@ def _keeps_core_terms(original, rewritten):
 
 ```
 第一次提问：店里一共多少家？
-回答：天鹅公主目前共有 47 家门店（清远含连州 40 / 广州含花都 4 / 肇庆 2 / 佛山 1，韶关无门店）
-引用：聚合页:entity·天鹅公主 + 权威裁决文档
+回答：Hunkon 目前共有 47 家门店（清远含连州 40 / 广州含花都 4 / 肇庆 2 / 佛山 1，韶关无门店）
+引用：聚合页:entity·Hunkon + 权威裁决文档
 
 第二次提问（相同问题）：直接命中语义缓存，回答与第一次完全一致
 缓存统计：{'enabled': True, 'entries': 1, 'total_hits': 3}

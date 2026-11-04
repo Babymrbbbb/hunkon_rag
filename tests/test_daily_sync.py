@@ -1,7 +1,7 @@
 """每日同步测试：变更检测、快照、--check 模式、报告生成。
 
 背景：
-  生产知识库 daily_sync.py，swan_rag 移植为 app/daily_sync.py。
+  生产知识库 daily_sync.py，hunkon_rag 移植为 app/daily_sync.py。
   核心：检测语料变更 → 触发重建 → 生成报告。
 """
 import json

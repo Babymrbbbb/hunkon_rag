@@ -120,7 +120,7 @@ _LOCAL_SPECS = {
         "dim": 1024,
         "pooling": "last",  # Qwen3 官方用法：取最后一个有效 token
         "query_prompt": (
-            "Instruct: Given a question about the Swan Noble bakery brand "
+            "Instruct: Given a question about the Hunkon Noble bakery brand "
             "knowledge base, retrieve relevant passages that answer the question\nQuery: "
         ),
         "doc_prompt": "Document: ",

@@ -1,5 +1,5 @@
 {
-  "source_note": "swan_rag 业务数字的集中真相源（门店数据见同目录 store_facts.json，有 xlsx 外部权威背书）。本文件收录门店以外的关键业务数字/日期（新品上市日期、加盟门槛、包材规格、会员/供应链/运维要点）。这些数值应可追溯品牌方真实资料；本仓库作为 showcase，更新时改此处并同步 data/corpus/*.md，pytest 卡点即能发现遗漏。",
+  "source_note": "hunkon_rag 业务数字的集中真相源（门店数据见同目录 store_facts.json，有 xlsx 外部权威背书）。本文件收录门店以外的关键业务数字/日期（新品上市日期、加盟门槛、包材规格、会员/供应链/运维要点）。这些数值应可追溯品牌方真实资料；本仓库作为 showcase，更新时改此处并同步 data/corpus/*.md，pytest 卡点即能发现遗漏。",
   "claims": {
     "campaign_launch_date": {
       "value": "6 月 1 日",

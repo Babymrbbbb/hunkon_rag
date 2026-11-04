@@ -1,10 +1,10 @@
-# 天鹅公主 AI 知识中台（RAG 服务）
+# Hunkon AI 知识中台（RAG 服务）
 
 > **当前状态：尚未公网部署，无在线演示地址。** 本地或容器一键启动即可完整运行，命令见本文「十、Docker」。
 > 集群部署见 [docs/k8s-deploy.md](docs/k8s-deploy.md)（含扩缩容验证与 FAQ）。
 > 此前版本此处引用的 `docs/deploy.md` 并不存在，属文档疏忽，已于 2026-11-03 修正。
 
-> **定位**：面向「天鹅公主 SWAN NOBLE」**47 家门店烘焙连锁**的 AI 知识中台**落地方案与架构实现**。
+> **定位**：面向「Hunkon HUNKON NOBLE」**47 家门店烘焙连锁**的 AI 知识中台**落地方案与架构实现**。
 > 由品牌运营负责人主导设计，目标是把分散在 SOP、新品资料、竞品情报、加盟政策中的知识，
 > 收敛成一个「问即得、带出处、可审计」的检索增强生成（RAG）服务，直接服务一线门店与运营决策。
 
@@ -208,7 +208,7 @@ Client → API网关(鉴权X-API-Key) → /chat
 ## 四、目录结构
 
 ```
-swan_rag/
+hunkon_rag/
 ├── app/
 │   ├── main.py          # FastAPI 入口：路由 + 全局鉴权 + 统一错误信封 + lifespan
 │   ├── config.py        # pydantic-settings（RAG_ 前缀）
@@ -413,7 +413,7 @@ RAG_LLM_DISABLE_REASONING=true   # 关闭思考链，直出 content
 
 | 问题 | 真实 LLM 回答 | 召回来源 |
 |---|---|---|
-| 天鹅公主是哪个城市的品牌？ | **清远**（无 RAG 时模型幻觉为「上海」，RAG 检索上下文纠正为清远并引《品牌介绍》原文） | 《品牌介绍：天鹅公主 SWAN NOBLE》 |
+| Hunkon 是哪个城市的品牌？ | **清远**（无 RAG 时模型幻觉为「上海」，RAG 检索上下文纠正为清远并引《品牌介绍》原文） | 《品牌介绍：Hunkon HUNKON NOBLE》 |
 | 2026 夏季推出了哪几款新品？ | 黑金可颂 / 联名桃酥 / 荔枝玫瑰冻芝士 / 青提冷萃欧包 | 《2026 夏季四款新品》 |
 | 目前有多少家门店？ | 47 家（清远 40 / 广州 4 / 肇庆 2 / 佛山 1） | 《门店网络》 |
 
@@ -454,7 +454,7 @@ docker compose up --build
 
 ```bash
 # 构建镜像
-docker build -t swan-rag:latest .
+docker build -t hunkon-rag:latest .
 
 # 配置 Secret（填入真实 Key）
 cd k8s && cp secret.example.yaml secret.yaml
@@ -463,8 +463,8 @@ cd k8s && cp secret.example.yaml secret.yaml
 kubectl apply -k k8s/
 
 # 验证
-kubectl get pods -l app=swan-rag
-kubectl get hpa swan-rag
+kubectl get pods -l app=hunkon-rag
+kubectl get hpa hunkon-rag
 ```
 
 - **Deployment**：2 副本，资源限制，readiness/liveness 健康检查

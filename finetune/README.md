@@ -1,6 +1,6 @@
 # LoRA 领域微调实验（Qwen2.5-0.5B）
 
-> **目的**：在 swan_rag 品牌知识语料上做领域微调，让模型回答品牌业务问题时更贴合知识库表述。
+> **目的**：在 hunkon_rag 品牌知识语料上做领域微调，让模型回答品牌业务问题时更贴合知识库表述。
 > **诚实标注**：本实验提供**完整可复现的脚本与数据流水线**，但**未在本机实际执行训练**——编写环境无 GPU、未安装深度学习运行时。在任意有 GPU 的环境按本 README 即可运行。
 
 ---
@@ -81,7 +81,7 @@ python finetune/eval_lora.py --base-model Qwen/Qwen2.5-0.5B --adapter finetune/o
 - **表述一致性**：是否使用知识库口径
 - **简洁性**：是否避免无关展开
 
-> 更严格的评估：可复用 swan_rag 的 golden set（`data/eval_golden.json`）做召回/忠实度评测，对比微调前后 faithfulness_rate。
+> 更严格的评估：可复用 hunkon_rag 的 golden set（`data/eval_golden.json`）做召回/忠实度评测，对比微调前后 faithfulness_rate。
 
 ---
 

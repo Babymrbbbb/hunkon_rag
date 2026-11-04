@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 # 必须在 import app 之前设置环境变量（settings 在导入时即读取）
-_TMP = tempfile.mkdtemp(prefix="swan_rag_test_")
+_TMP = tempfile.mkdtemp(prefix="hunkon_rag_test_")
 os.environ["RAG_RAG_DB_FILE"] = os.path.join(_TMP, "test.db")
 os.environ["RAG_API_KEY"] = "test-secret-key"
 os.environ["RAG_LLM_PROVIDER"] = "mock"
@@ -70,13 +70,13 @@ def test_wrong_api_key_returns_401():
 def test_ingest_and_chat():
     r = client.post(
         "/ingest",
-        json={"title": "测试门店", "content": "天鹅公主在清远有 40 家门店，全品牌共 47 家，主打黑金可颂。"},
+        json={"title": "测试门店", "content": "Hunkon 在清远有 40 家门店，全品牌共 47 家，主打黑金可颂。"},
         headers=HEADERS,
     )
     assert r.status_code == 200
     assert r.json()["chunks"] >= 1
 
-    r = client.post("/chat", json={"question": "天鹅公主有多少家门店？"}, headers=HEADERS)
+    r = client.post("/chat", json={"question": "Hunkon 有多少家门店？"}, headers=HEADERS)
     assert r.status_code == 200
     body = r.json()
     assert body["answer"]
@@ -118,10 +118,10 @@ def test_search_requires_api_key():
 
 
 def test_search_returns_hits_with_source():
-    r = client.post("/search", json={"query": "天鹅公主有多少家门店？"}, headers=HEADERS)
+    r = client.post("/search", json={"query": "Hunkon 有多少家门店？"}, headers=HEADERS)
     assert r.status_code == 200
     body = r.json()
-    assert body["query"] == "天鹅公主有多少家门店？"
+    assert body["query"] == "Hunkon 有多少家门店？"
     assert body["hits"], "检索必须有命中，空结果说明索引没建好"
     first = body["hits"][0]
     assert first["rank"] == 1

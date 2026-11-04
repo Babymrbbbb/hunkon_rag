@@ -1,7 +1,7 @@
 """对话沉淀摄入测试：读取 inbox、生成 md、标记 done、防双写。
 
 背景：
-  生产知识库 ingest_conversations.py，swan_rag 移植为 app/ingest_conv.py。
+  生产知识库 ingest_conversations.py，hunkon_rag 移植为 app/ingest_conv.py。
   核心：把有结论的对话摘要从 inbox 摄入知识库，避免重复摄入。
 """
 import json

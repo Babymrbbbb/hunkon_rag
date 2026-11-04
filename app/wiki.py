@@ -1,6 +1,6 @@
 """聚合层（wiki 层）：把 raw corpus 编译为可导航的聚合页。
 
-这是 llm-wiki「raw → wiki → RAG 双轨」的 swan_rag 可运行版。
+这是 llm-wiki「raw → wiki → RAG 双轨」的 hunkon_rag 可运行版。
 
 两种编译器（通过 RAG_WIKI_COMPILER 切换）：
 - rule（默认）：确定性规则聚合（业务词表 + 文档首行），离线可跑、可测试、可复现。
@@ -33,8 +33,8 @@ _ENTITY_TERMS = {
     "冰面包": "entity/冰面包",
     "金粒门": "entity/金粒门",
     "玛芝莲": "entity/玛芝莲",
-    "天鹅公主": "entity/天鹅公主",
-    "天鹅卡": "entity/天鹅卡",
+    "Hunkon": "entity/Hunkon",
+    "Hunkon 卡": "entity/Hunkon 卡",
 }
 
 _CONCEPT_TERMS = {
@@ -51,7 +51,7 @@ _CONCEPT_TERMS = {
 # 品牌名聚合页：这类词几乎出现在每条业务问题里，命中后若排在前面会形成
 # 「万能兜底页」，掩盖真正命中的实体/概念页（2026-11-03 审查修复）。
 # 新增品牌/子品牌时改这里即可，不要散落在函数内部。
-_BRAND_TERMS = {"天鹅公主"}
+_BRAND_TERMS = {"Hunkon"}
 
 WIKI_DIR = Path(__file__).resolve().parent.parent / "data" / "wiki"
 INDEX_PATH = WIKI_DIR / "index.json"
@@ -151,8 +151,8 @@ class WikiIndex:
     def search(self, query: str) -> List[WikiPage]:
         """检索聚合页：命中业务词则返回对应聚合页。
 
-        排序策略（2026-11-03 审查修复）：品牌名（如「天鹅公主」）会出现在绝大多数
-        业务问题里，若按词表遍历顺序返回，会把「天鹅公主」万能页顶到最前，掩盖
+        排序策略（2026-11-03 审查修复）：品牌名（如「Hunkon」）会出现在绝大多数
+        业务问题里，若按词表遍历顺序返回，会把「Hunkon」万能页顶到最前，掩盖
         真正命中的实体/概念页。这里把命中词按「非品牌名优先」排序：
         - 具体实体/概念（门店网络、加盟政策、冰面包调研…）优先；
         - 品牌名聚合页作为兜底放最后（仅在无更具体命中时返回）。

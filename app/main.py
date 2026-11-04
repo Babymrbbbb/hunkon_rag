@@ -75,7 +75,7 @@ async def get_current_role(x_api_key: str = Header(None, alias="X-API-Key")) -> 
 
 
 app = FastAPI(
-    title="天鹅公主 RAG 知识问答服务",
+    title="Hunkon RAG 知识问答服务",
     version="1.0.0",
     lifespan=lifespan,
     dependencies=[Depends(get_api_key)],

@@ -6,8 +6,8 @@
 
 与生产库差异：
   - 生产库用 agnes-2.5-flash 直连 + 硬编码绝对路径
-  - swan_rag 复用 app.llm.get_llm_provider()（LLMProvider 抽象）
-  - 生产库读 _meta/wiki_schema.md；swan_rag 用内置 prompt 模板
+  - hunkon_rag 复用 app.llm.get_llm_provider()（LLMProvider 抽象）
+  - 生产库读 _meta/wiki_schema.md；hunkon_rag 用内置 prompt 模板
 
 用法：
   python -m app.special_pages [--dry-run]
@@ -55,7 +55,7 @@ def gen_comparison(page_name: str, entity_a: str, entity_b: str) -> tuple:
 
 要求：
 1. 「对比维度表」至少 6 个维度（定位/价格带/门店规模/核心品类/营销打法/威胁等级等）。
-2. 「综合判断」给出对天鹅公主的竞争启示。
+2. 「综合判断」给出对Hunkon 的竞争启示。
 3. 「来源列表」引用两个实体页各自的主要来源。
 4. 「原文引用」从两个实体页中各取关键句。
 5. 输出纯 Markdown。
@@ -102,7 +102,7 @@ def gen_synthesis(page_name: str, involved: list, strategy_topic: str) -> tuple:
 
 要求：
 1. 「跨源综合」把多个来源的信息综合成可执行的结论。
-2. 「策略建议」给出对天鹅公主的具体可落地建议（3-5 条）。
+2. 「策略建议」给出对Hunkon 的具体可落地建议（3-5 条）。
 3. 「涉及实体/概念」列出所有涉及的页面。
 4. 「来源列表」引用涉及的页面来源。
 5. 「原文引用」从多个页面取关键句。
@@ -138,12 +138,12 @@ def main() -> int:
     args = ap.parse_args()
 
     comparisons = [
-        ("金粒门_vs_天鹅公主", "金粒门", "天鹅公主"),
-        ("玛芝莲_vs_天鹅公主", "玛芝莲", "天鹅公主"),
+        ("金粒门_vs_Hunkon", "金粒门", "Hunkon"),
+        ("玛芝莲_vs_Hunkon", "玛芝莲", "Hunkon"),
     ]
     syntheses = [
-        ("烘焙竞品防御策略", [("金粒门", "entity"), ("玛芝莲", "entity"), ("天鹅公主", "entity")],
-         "天鹅公主烘焙竞品防御策略"),
+        ("烘焙竞品防御策略", [("金粒门", "entity"), ("玛芝莲", "entity"), ("Hunkon", "entity")],
+         "Hunkon 烘焙竞品防御策略"),
     ]
 
     if args.dry_run:

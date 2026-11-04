@@ -1,7 +1,7 @@
 """可观测埋点测试：事件构造、鉴权头、采样、失败静默。
 
 背景：
-  生产知识库 langfuse_trace.py，swan_rag 移植为 app/trace.py。
+  生产知识库 langfuse_trace.py，hunkon_rag 移植为 app/trace.py。
   核心：零依赖上报 LLM 调用到 Langfuse，失败绝不影响主链路。
 """
 import os

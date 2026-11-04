@@ -7,7 +7,7 @@
 
 与生产库差异：
   - 生产库与 _meta/sync_state.json 快照比对 + 调 build_kb.py 重建
-  - swan_rag 与 SQLite 中 Document 表的 source 字段比对（更直接）
+  - hunkon_rag 与 SQLite 中 Document 表的 source 字段比对（更直接）
   - 重建走 seed.force_rebuild（已有自愈合机制）
 
 用法：

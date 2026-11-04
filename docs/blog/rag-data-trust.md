@@ -136,4 +136,4 @@ def test_distribution_matches_truth():
 
 ---
 
-*本文基于一个真实 RAG 知识库项目（swan_rag）的故障复盘与修复实践。技术栈：FastAPI + SQLModel + SQLite + pytest。相关实现已开源：https://github.com/Babymrbbbb/swan_rag*
+*本文基于一个真实 RAG 知识库项目（hunkon_rag）的故障复盘与修复实践。技术栈：FastAPI + SQLModel + SQLite + pytest。相关实现已开源：https://github.com/Babymrbbbb/hunkon_rag*

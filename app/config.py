@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # 数据库
-    rag_db_file: str = "swan_rag.db"
+    rag_db_file: str = "hunkon_rag.db"
 
     # 全局鉴权
     api_key: str = "dev-secret-key"

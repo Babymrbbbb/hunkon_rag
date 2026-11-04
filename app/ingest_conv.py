@@ -7,7 +7,7 @@
 
 与生产库差异：
   - 生产库写「对话沉淀/L3_原始资料」+ 11 子库分类 + 触发 daily_sync
-  - swan_rag 写 data/corpus（语料目录），不分类（语料即全部知识）
+  - hunkon_rag 写 data/corpus（语料目录），不分类（语料即全部知识）
 
 用法：
   python -m app.ingest_conv [--dry-run]

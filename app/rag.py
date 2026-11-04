@@ -16,7 +16,7 @@ from app.schemas import ChatCitation
 from app.wiki import WikiPage, build_wiki
 
 SYSTEM_PROMPT = (
-    "你是「天鹅公主 SWAN NOBLE」品牌的 AI 知识助手。"
+    "你是「Hunkon HUNKON NOBLE」品牌的 AI 知识助手。"
     "只能依据下面提供的资料回答用户问题，不得编造资料之外的信息；"
     "若资料不足以回答，请如实说明，并列出你参考的资料来源。"
 )

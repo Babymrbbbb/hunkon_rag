@@ -18,12 +18,12 @@ from app.database import _sqlite_url  # noqa: E402
 
 def test_relative_path_keeps_dot_prefix():
     """相对路径保持 sqlite:///./file 形式，落库到工作目录。"""
-    assert _sqlite_url("swan_rag.db") == "sqlite:///./swan_rag.db"
+    assert _sqlite_url("hunkon_rag.db") == "sqlite:///./hunkon_rag.db"
 
 
 def test_absolute_path_not_treated_as_relative():
     """绝对路径必须生成 sqlite:///<abs>，不能被加上 './' 前缀。"""
-    abs_path = Path(tempfile.mkdtemp(prefix="swan_rag_url_test_")) / "t.db"
+    abs_path = Path(tempfile.mkdtemp(prefix="hunkon_rag_url_test_")) / "t.db"
     url = _sqlite_url(str(abs_path))
     assert not url.startswith("sqlite:///./"), f"绝对路径被误加前缀: {url}"
     assert url.endswith(abs_path.as_posix()), f"URL 未包含绝对路径: {url}"

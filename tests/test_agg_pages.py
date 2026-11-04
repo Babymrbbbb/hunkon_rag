@@ -1,11 +1,11 @@
 """聚合页 LLM 生成测试：扫描、类型判断、截断检测、prompt 构建、生成链路。
 
 背景：
-  生产知识库 generate_agg_pages.py，swan_rag 移植为 app/agg_pages.py。
+  生产知识库 generate_agg_pages.py，hunkon_rag 移植为 app/agg_pages.py。
   核心：用 LLM 批量生成聚合页，并带权威口径覆盖 + 截断检测。
 
-注意：scan_sources 的聚合页键名是「文档完整标题」（如「品牌介绍：天鹅公主 SWAN NOBLE」），
-不是裸实体名（如「天鹅公主」）。这与生产库 aggregation_index 的 page 名一致。
+注意：scan_sources 的聚合页键名是「文档完整标题」（如「品牌介绍：Hunkon HUNKON NOBLE」），
+不是裸实体名（如「Hunkon」）。这与生产库 aggregation_index 的 page 名一致。
 """
 import sys
 from pathlib import Path
@@ -23,7 +23,7 @@ from app.agg_pages import (  # noqa: E402
 
 CORPUS = ROOT / "data" / "corpus"
 
-BRAND_PAGE = "品牌介绍：天鹅公主 SWAN NOBLE"
+BRAND_PAGE = "品牌介绍：Hunkon HUNKON NOBLE"
 STORE_PAGE = "门店网络"
 
 
@@ -41,19 +41,19 @@ def test_scan_sources_type_entity_for_brand():
     agg = scan_sources(CORPUS)
     assert agg[BRAND_PAGE]["type"] == "concept"  # 品牌页标题含「品牌介绍」，非裸品牌名
     # 通过 fix_type 可将品牌页修正为 entity
-    assert fix_type("天鹅公主", agg[BRAND_PAGE]["type"]) == "entity"
+    assert fix_type("Hunkon", agg[BRAND_PAGE]["type"]) == "entity"
 
 
 def test_scan_sources_cross_references():
     """正文包含其它标题词的文档应挂到对应页。"""
     agg = scan_sources(CORPUS)
-    # 01_stores.md 标题是「门店网络」，正文含「天鹅公主」→ 应挂到品牌页
+    # 01_stores.md 标题是「门店网络」，正文含「Hunkon」→ 应挂到品牌页
     brand_sources = agg[BRAND_PAGE]["sources"]
     assert len(brand_sources) >= 2, f"品牌页应含跨引用源: {brand_sources}"
 
 
 def test_fix_type():
-    assert fix_type("天鹅公主", "concept") == "entity"
+    assert fix_type("Hunkon", "concept") == "entity"
     assert fix_type("玛芝莲", "concept") == "entity"
     assert fix_type("门店网络", "entity") == "entity"  # 非品牌保持原类型
     assert fix_type("供应链", "concept") == "concept"

@@ -9,8 +9,8 @@
 
 与生产库差异：
   - 生产库用 rag_qa.llm_complete（urllib 直连 + 环境变量端点）
-  - swan_rag 用 app.llm.get_llm_provider()（LLMProvider 抽象，配置化）
-  - 生产库环境变量 KB_QUERY_REWRITE；swan_rag 用 RAG_QUERY_REWRITE
+  - hunkon_rag 用 app.llm.get_llm_provider()（LLMProvider 抽象，配置化）
+  - 生产库环境变量 KB_QUERY_REWRITE；hunkon_rag 用 RAG_QUERY_REWRITE
 
 用法：
   from app.rewrite import rewrite_query
@@ -120,7 +120,7 @@ def _keeps_core_terms(original: str, rewritten: str) -> bool:
         if n in rewritten:
             return True
     # 2. 品牌名必须保留
-    for brand in ("天鹅公主", "玛芝莲", "金粒门"):
+    for brand in ("Hunkon", "玛芝莲", "金粒门"):
         if brand in original and brand in rewritten:
             return True
     # 3. 滑动窗口提取 2-3 字关键词，至少一个保留
@@ -148,7 +148,7 @@ def _looks_rewritable(question: str) -> bool:
         if w in question:
             return True
     # 无品牌词且较短（< 12 字符）的裸问法，大概率缺实体
-    if len(question) < 12 and "天鹅公主" not in question and "玛芝莲" not in question:
+    if len(question) < 12 and "Hunkon" not in question and "玛芝莲" not in question:
         return True
     return False
 

@@ -31,7 +31,7 @@
 
 ### 设计
 
-作品集仓库 `swan_rag` 新增 `.github/workflows/eval.yml`：
+作品集仓库 `hunkon_rag` 新增 `.github/workflows/eval.yml`：
 
 - **触发**：PR 到 main、push main、手动触发。
 - **命令**：`python -m app.eval_cli --mock --json --threshold 0.75`
@@ -73,7 +73,7 @@ python -m app.eval_cli --mock --json --threshold 0.75
 | 反馈接口（POST/GET） | 端到端通过 |
 | 看板页面 + 数据接口 | 端到端通过 |
 | CI 命令本地验证 | 0.875 ≥ 0.75，passed |
-| swan_rag 推送 | `47d7c73..7e7700a` |
+| hunkon_rag 推送 | `47d7c73..7e7700a` |
 
 ## 五、经验沉淀
 

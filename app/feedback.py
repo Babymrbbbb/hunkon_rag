@@ -7,7 +7,7 @@
 
 与生产库差异：
   - 生产库路径：KB/_meta/feedback.db
-  - swan_rag 路径：data/feedback.db（相对路径，随仓库分发）
+  - hunkon_rag 路径：data/feedback.db（相对路径，随仓库分发）
 
 用法：
   from app.feedback import FeedbackStore

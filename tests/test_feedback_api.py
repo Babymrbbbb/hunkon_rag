@@ -38,7 +38,7 @@ def test_feedback_post_and_stats():
     r = c.post(
         "/api/feedback",
         json={
-            "question": "天鹅公主有多少家门店？",
+            "question": "Hunkon 有多少家门店？",
             "answer": "47 家",
             "citations": [{"title": "门店网络"}],
             "rating": 1,

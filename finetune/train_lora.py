@@ -1,6 +1,6 @@
 """LoRA 领域微调 · 训练脚本（Qwen2.5-0.5B + peft + transformers）
 
-在 swan_rag 品牌知识语料上做领域微调，让模型回答品牌业务问题时更贴合知识库表述。
+在 hunkon_rag 品牌知识语料上做领域微调，让模型回答品牌业务问题时更贴合知识库表述。
 
 用法（需 GPU 环境，或 CPU 但训练时间很长）：
     pip install torch transformers peft datasets accelerate
@@ -37,7 +37,7 @@ OUT_DIR = Path(__file__).resolve().parent / "output"
 def format_example(example: dict) -> str:
     """把指令数据组装成 Qwen 聊天格式。"""
     return (
-        f"<|im_start|>system\n你是天鹅公主品牌知识助手，请基于知识库内容回答。<|im_end|>\n"
+        f"<|im_start|>system\n你是Hunkon 品牌知识助手，请基于知识库内容回答。<|im_end|>\n"
         f"<|im_start|>user\n{example['instruction']}\n{example['input']}<|im_end|>\n"
         f"<|im_start|>assistant\n{example['output']}<|im_end|>\n"
     )

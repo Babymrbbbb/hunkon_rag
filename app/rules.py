@@ -2,18 +2,18 @@
 
 背景：
   生产知识库用 kb_rules.apply_ruling_overrides() 在「LLM 生成之后」做确定性覆盖：
-  裁决文档写了什么就是什么，不靠 LLM 自觉。swan_rag 的真相源是
+  裁决文档写了什么就是什么，不靠 LLM 自觉。hunkon_rag 的真相源是
   data/business_facts.json + data/store_facts.json（JSON 版裁决文档），
   本模块读取它们，对聚合页/LLM 输出做同样的确定性后处理。
 
 与生产库的差异：
   - 生产库读「裁决 .md 文档」（路径硬编码 KB 根目录）
-  - swan_rag 读「真相源 JSON」（相对路径，随仓库分发，别人 clone 后替换 JSON 即可）
+  - hunkon_rag 读「真相源 JSON」（相对路径，随仓库分发，别人 clone 后替换 JSON 即可）
   - 覆盖规则由 JSON 内容驱动，不写死业务数字（除「冰面包非在售」这类权威口径外）
 
 用法：
   from app.rules import apply_ruling_overrides
-  text = apply_ruling_overrides(text, page_name="天鹅公主")
+  text = apply_ruling_overrides(text, page_name="Hunkon")
 """
 import json
 import re
@@ -24,10 +24,10 @@ ROOT = Path(__file__).resolve().parent.parent
 STORE_FACTS = ROOT / "data" / "store_facts.json"
 BUSINESS_FACTS = ROOT / "data" / "business_facts.json"
 
-# 权威口径：冰面包不是天鹅公主在售产品，仅是市场调研对象（2026-10-26 用户确认）。
-# 这是 swan_rag 特有的业务裁决，无法从 JSON 推导，因此作为常量规则。
+# 权威口径：冰面包不是Hunkon 在售产品，仅是市场调研对象（2026-10-26 用户确认）。
+# 这是 hunkon_rag 特有的业务裁决，无法从 JSON 推导，因此作为常量规则。
 ICEBREAD_RULING = (
-    "冰面包不是天鹅公主的在售产品，仅是市场调研对象（2026-10-26 内部确认，未上线）"
+    "冰面包不是Hunkon 的在售产品，仅是市场调研对象（2026-10-26 内部确认，未上线）"
 )
 
 
@@ -105,7 +105,7 @@ def apply_ruling_overrides(text: str, page_name: str = "") -> str:
         ):
             # 替换「冰面包是……系列/产品」这类表述
             out = re.sub(
-                r"冰面包(是|为)(天鹅公主的)?(夏季爆款系列|在售产品|产品线)",
+                r"冰面包(是|为)(Hunkon 的)?(夏季爆款系列|在售产品|产品线)",
                 ICEBREAD_RULING,
                 out,
             )

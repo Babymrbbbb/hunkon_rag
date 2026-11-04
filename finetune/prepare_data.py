@@ -1,5 +1,5 @@
 """LoRA 微调 · 数据准备
-把 swan_rag 的 data/corpus/*.md（品牌知识语料）转换为「指令-回答」JSONL 训练数据。
+把 hunkon_rag 的 data/corpus/*.md（品牌知识语料）转换为「指令-回答」JSONL 训练数据。
 
 用法：
     python finetune/prepare_data.py

@@ -1,7 +1,7 @@
 """一致性校验测试：一致、缺失、多余、--force 重建。
 
 背景：
-  生产知识库 check_sync.py，swan_rag 移植为 app/check_sync.py。
+  生产知识库 check_sync.py，hunkon_rag 移植为 app/check_sync.py。
   核心：校验语料目录与检索索引一致性。
 """
 import json

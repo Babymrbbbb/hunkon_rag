@@ -25,18 +25,18 @@ OUT_DIR = Path(__file__).resolve().parent / "output"
 
 # 与 golden set 同源的品牌业务问题（覆盖核心场景）
 EVAL_QUESTIONS = [
-    "天鹅公主目前一共有多少家门店，主要在哪些城市？",
-    "2026 年夏季天鹅公主推出了哪四款新品？",
-    "冰面包是天鹅公主的在售产品吗？市场通行参考保质期是多少？",
+    "Hunkon 目前一共有多少家门店，主要在哪些城市？",
+    "2026 年夏季Hunkon 推出了哪四款新品？",
+    "冰面包是Hunkon 的在售产品吗？市场通行参考保质期是多少？",
     "竞品金粒门主打什么品类的产品？",
-    "加盟天鹅公主需要满足什么条件？",
-    "天鹅公主的包材用了什么材质，是否可持续？",
+    "加盟Hunkon 需要满足什么条件？",
+    "Hunkon 的包材用了什么材质，是否可持续？",
 ]
 
 
 def generate(model, tokenizer, question: str, max_new_tokens: int = 128) -> str:
     prompt = (
-        f"<|im_start|>system\n你是天鹅公主品牌知识助手，请基于知识库内容回答。<|im_end|>\n"
+        f"<|im_start|>system\n你是Hunkon 品牌知识助手，请基于知识库内容回答。<|im_end|>\n"
         f"<|im_start|>user\n{question}<|im_end|>\n<|im_start|>assistant\n"
     )
     inputs = tokenizer(prompt, return_tensors="pt")
