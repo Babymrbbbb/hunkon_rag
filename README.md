@@ -223,6 +223,11 @@ swan_rag/
 │   ├── feedback.py      # 用户反馈闭环（点赞/点踩，导出 golden set）+ /api/feedback
 │   ├── agg_pages.py     # LLM 批量聚合页生成（权威口径覆盖 + 截断检测）
 │   ├── rewrite.py       # 查询改写（LLM 改写口语化问法，默认关闭，静默降级）
+│   ├── trace.py         # 可观测埋点（零依赖 Langfuse 协议，采样上报 LLM 调用）
+│   ├── special_pages.py # 特殊页生成（comparison 对比页 / synthesis 综合页）
+│   ├── ingest_conv.py   # 对话沉淀摄入（inbox → 语料，防双写）
+│   ├── daily_sync.py    # 每日同步（变更检测 → 触发重建 → 报告）
+│   ├── check_sync.py    # 一致性校验（语料 vs 索引，--force 重建）
 │   ├── rag.py           # 管线编排：聚合层优先 + 混合检索 + 语义缓存 + 查询改写 + LLM 生成
 │   ├── eval.py          # golden-set 评测（召回命中率 + 忠实度）
 │   └── static/index.html # 内部体验入口（黑金主题对话 UI）
