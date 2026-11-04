@@ -14,11 +14,10 @@
   - 只在真实 LLM 模式下有意义，mock 模式下开关无效（判断不可靠）
 
 用法：
-  from app.crag import corrective_retrieve
-  hits = corrective_retrieve(question, session, embedder, retriever, top_k, search_question)
+  from app.crag import corrective_rerank
+  hits, used_rewrite, retried = corrective_rerank(
+      question, hits, session, embedder, retriever, top_k, search_question, doc_titles)
 """
-import json
-import re
 from typing import List, Tuple
 
 from app.config import settings

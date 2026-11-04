@@ -17,7 +17,6 @@
   rewritten, changed = rewrite_query("那家卖坚果礼盒的怎么样？")
 """
 import hashlib
-import json
 import os
 import re
 import sqlite3

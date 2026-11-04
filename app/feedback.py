@@ -17,7 +17,6 @@
   store.export_golden_set()
 """
 import json
-import os
 import sqlite3
 import time
 from pathlib import Path

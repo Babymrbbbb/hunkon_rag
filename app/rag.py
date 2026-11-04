@@ -4,7 +4,7 @@ import threading
 import time
 from typing import List, Tuple
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.config import settings
 from app.embedder import Embedder, get_embedder

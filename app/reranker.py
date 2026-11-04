@@ -19,7 +19,7 @@
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from app.config import settings
 

@@ -7,7 +7,6 @@
 - synchronous=NORMAL：WAL 模式下崩溃不损坏库，只是可能丢最近提交（审计可接受）；
 - busy_timeout=5000：并发写排队而非立即报 database is locked。
 """
-import os
 from pathlib import Path
 
 from sqlalchemy import event

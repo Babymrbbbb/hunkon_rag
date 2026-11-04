@@ -17,7 +17,6 @@
   python -m app.agg_pages --corpus data/corpus --min-sources 2 [--dry-run] [--only Hunkon]
 """
 import argparse
-import json
 import re
 import sys
 from datetime import datetime

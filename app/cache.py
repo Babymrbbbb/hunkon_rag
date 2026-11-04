@@ -24,8 +24,6 @@ import sqlite3
 import time
 from pathlib import Path
 
-from app.config import settings
-
 # 默认缓存路径：项目根 / data / semantic_cache.db（随仓库分发，gitignore 由用户决定）
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DB = ROOT / "data" / "semantic_cache.db"

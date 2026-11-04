@@ -10,7 +10,6 @@
 """
 import json
 import math
-import re
 import sys
 from collections import Counter, defaultdict
 from typing import List, Tuple
