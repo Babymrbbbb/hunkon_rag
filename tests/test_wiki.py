@@ -2,7 +2,7 @@
 
 覆盖：
 1. 聚合索引能构建出页面（实体/概念）
-2. 检索命中聚合页：问"冰面包"命中 entity/冰面包
+2. 检索命中聚合页：问"冰面包"命中 entity/冰面包（调研实体，非在售产品）
 3. 聚合页含来源列表与关键事实
 4. LLM 编译器：mock LLM 输出可解析为聚合页；解析失败降级规则兜底
 """
@@ -84,9 +84,9 @@ def test_llm_compiler_parses_valid_json():
     raw = json.dumps([{
         "title": "冰面包",
         "kind": "entity",
-        "summary": "冰面包是夏季爆款。",
-        "facts": ["保质期3天"],
-        "sources": ["冰面包产品线"],
+        "summary": "冰面包是市场调研对象，非在售。",
+        "facts": ["非在售，市场参考保质期3天"],
+        "sources": ["冰面包市场调研"],
     }], ensure_ascii=False)
     pages = llm_index._parse_llm_output(raw)
     assert pages, "解析合法 JSON 失败"

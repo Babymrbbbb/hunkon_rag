@@ -34,7 +34,7 @@ from app.retriever import Retriever  # noqa: E402
 DOCS = [
     ("竞品分析：玛芝莲", "玛芝莲是清远本地烘焙品牌，近年建设超级工厂，从区域连锁向供应链平台升维，主打 B 端蛋糕券与政企采购。"),
     ("竞品分析：金粒门", "金粒门是同期崛起的烘焙品牌，主打干货类产品（坚果礼盒、谷物脆、养生粉），以健康零食化差异化切入。"),
-    ("冰面包产品线", "冰面包是天鹅公主的夏季爆款，需在 0–4℃ 冷藏保存，保质期 3 天，主打口味有北海道生牛乳、芒果椰椰、杨梅气泡。"),
+    ("冰面包市场调研", "冰面包非天鹅公主在售产品，市场通行参考值需在 0–4℃ 冷藏保存，保质期通常 3 天。"),
 ]
 
 
@@ -58,7 +58,7 @@ def _titles_for(question, use_hybrid=True, top_k=2):
 def test_hybrid_precise_term():
     """精确术语问题 → 倒排路命中正确文档。"""
     titles = _titles_for("冰面包保质期多久？", use_hybrid=True)
-    assert "冰面包产品线" in titles, f"精确术语未命中冰面包: {titles}"
+    assert "冰面包市场调研" in titles, f"精确术语未命中冰面包调研: {titles}"
 
 
 def test_hybrid_keyword_recalls_entity():
@@ -78,5 +78,5 @@ def test_hybrid_vs_keyword_only_not_worse():
     """混合检索不应劣于纯关键词：精确术语问题两种模式都应命中。"""
     kw_only = _titles_for("冰面包保质期多久？", use_hybrid=False, top_k=2)
     hybrid = _titles_for("冰面包保质期多久？", use_hybrid=True, top_k=2)
-    assert "冰面包产品线" in kw_only
-    assert "冰面包产品线" in hybrid
+    assert "冰面包市场调研" in kw_only
+    assert "冰面包市场调研" in hybrid

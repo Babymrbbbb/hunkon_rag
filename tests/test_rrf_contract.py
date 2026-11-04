@@ -37,7 +37,7 @@ from app.retriever import InvertedIndex, Retriever, get_cached_chunks, rrf_fuse 
 DOCS = [
     ("竞品分析：金粒门", "金粒门是同期崛起的烘焙品牌，主打干货类产品（坚果礼盒、谷物脆、养生粉），以健康零食化差异化切入。"),
     ("竞品分析：玛芝莲", "玛芝莲是清远本地烘焙品牌，建设超级工厂，向供应链平台升维，覆盖面包蛋糕西点与节令食品。"),
-    ("冰面包产品线", "冰面包需 0-4 度冷藏保存，保质期 3 天，主打北海道生牛乳、芒果椰椰、杨梅气泡。"),
+    ("冰面包市场调研", "冰面包非在售，市场通行参考值需 0-4 度冷藏保存，保质期 3 天。"),
 ]
 
 
@@ -101,7 +101,7 @@ def test_all_returned_chunks_are_real():
     """混合检索结果不能包含不存在的 chunk（旧 bug 会返回浮点 key 后被过滤，导致结果数变少）。"""
     emb = get_embedder()
     ret = Retriever(emb, top_k=3, use_hybrid=True)
-    q = "冰面包保质期多久？"
+    q = "冰面包市场调研的参考保质期多久？"
     with Session(engine) as s:
         chunks, _index, by_id = get_cached_chunks(s)
         hits = ret.search(s, emb.embed(q), top_k=3, query_text=q, use_hybrid=True)

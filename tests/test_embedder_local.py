@@ -51,7 +51,7 @@ def test_missing_model_fingerprint_falls_back_to_mock():
 def test_missing_model_degrades_to_mock():
     """模型缺失时不能抛异常：降级 mock，保证服务可用（与生产 KB 策略一致）。"""
     emb = LocalOnnxEmbedder(str(MODEL_DIR / "__not_exist__"))
-    vec = emb.embed("冰面包保质期")
+    vec = emb.embed("冰面包市场调研")
     assert len(vec) == settings.embed_dim  # 落回 mock 维度
 
 
@@ -79,8 +79,8 @@ def test_local_separates_paraphrase_better_than_mock():
     这是引入 local 的核心动机——mock 只能匹配字面重叠，「能放几天」与「保质期」
     几乎没有共同字符，语义相近却召回不到。
     """
-    question = "冰面包能放几天？"
-    related = "冰感系列产品需全程 0-4 度冷藏，保质期 3 天，当日未售完即下架。"
+    question = "冰面包市场调研对象是什么？"
+    related = "冰面包非在售，市场通行参考值需 0-4 度冷藏，保质期 3 天。"
     unrelated = "门店网络覆盖清远、广州、肇庆、佛山四地，共 47 家门店。"
 
     local = LocalOnnxEmbedder(str(MODEL_DIR))
