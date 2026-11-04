@@ -8,6 +8,12 @@
 > 由品牌运营负责人主导设计，目标是把分散在 SOP、新品资料、竞品情报、加盟政策中的知识，
 > 收敛成一个「问即得、带出处、可审计」的检索增强生成（RAG）服务，直接服务一线门店与运营决策。
 
+> **开源复刻定位（2026-11-04）**：本仓库是**生产知识库的开源复刻版**——把真实业务系统的
+> RAG 架构（混合检索 / 聚合层 / 评测门禁 / 权威口径覆盖 / 语义缓存 / 反馈闭环）用可公开、
+> 可复现的方式重新实现。**数据是占位的假数据/脱敏数据**，但代码能力与生产系统一致：
+> 别人 clone 后替换 `data/corpus`（自己的文档）与 `data/*_facts.json`（自己的权威事实），
+> 即可变成自己的真实知识库。
+
 这不是一个脱离业务的"玩具 demo"——知识库的维度（品牌 / 门店网络 / 夏季新品 / 包材 / 会员 / 供应链 / 竞品金粒门 / 加盟 / 数字化）全部映射品牌真实经营切面；架构已用真实 LLM 端到端验证。**对外呈现的是"为真实业务设计的 AI 落地方案"，而非"练手项目"。**
 
 ---
@@ -36,6 +42,10 @@
 | 存储 | SQLite + SQLModel（生产可换 pgvector） |
 | LLM / 向量化 | **供应商解耦**：`LLMProvider` / `Embedder` 抽象；向量化三档 `mock`（哈希词袋，CI 用）/ `local`（本地 ONNX，真语义）/ `real`（OpenAI 兼容接口） |
 | 检索 | 文本切分 + 向量余弦召回 top-k + 倒排 BM25-lite，RRF 融合 |
+| 权威口径 | `app/rules.py` 确定性覆盖：读真相源 JSON，LLM 输出错误时强制修正（门店数/冰面包口径） |
+| 语义缓存 | `app/cache.py` SQLite 语义缓存：相似问题直接返回历史答案，跳过 LLM 调用 |
+| 文档解析 | `app/extract.py` 纯标准库抽取 md/txt/xlsx/docx/pdf → Markdown |
+| 索引构建 | `scripts/build_index.py` 扫描任意语料目录（多格式）→ 灌库 → 刷新索引 |
 | 测试 / 评测 | pytest + golden-set 评测脚本 |
 | 部署 | Docker 分层构建 + docker-compose |
 
@@ -171,6 +181,27 @@ Client → API网关(鉴权X-API-Key) → /chat
 
 ---
 
+## 三点五、开源复刻：如何换成你自己的知识库
+
+本仓库的代码能力与生产知识库一致，但 `data/` 下是**占位的脱敏数据**。要变成你自己的真实知识库，只需替换三样东西：
+
+1. **替换语料**：把 `data/corpus/` 换成你自己的文档目录（支持 `.md` / `.txt` / `.xlsx` / `.docx` / `.pdf`）。
+   ```bash
+   python -m scripts.build_index --corpus /path/to/your/docs
+   ```
+   脚本会自动抽取文本 → 灌库 → 刷新索引。
+
+2. **替换权威事实**：编辑 `data/store_facts.json`（门店/城市分布）与 `data/business_facts.json`（业务数字），
+   `tests/test_grounding.py` 会自动校验语料与真相源一致，防止「语料改了、真相源没改」的矛盾。
+
+3. **配置 LLM 与向量**：
+   - 向量：`RAG_EMBEDDER_PROVIDER=local` + `RAG_EMBEDDER_LOCAL_DIR=<模型目录>`（本地 ONNX）
+   - LLM：`RAG_LLM_PROVIDER=real` + `RAG_LLM_BASE_URL` + `RAG_LLM_API_KEY` + `RAG_LLM_MODEL`
+
+完成这三步后，你的系统就与生产知识库架构一致：混合检索、聚合层、权威口径覆盖、语义缓存、评测门禁全部生效。
+
+---
+
 ## 四、目录结构
 
 ```
@@ -186,9 +217,14 @@ swan_rag/
 │   ├── embedder.py      # Embedder 抽象 + Mock(哈希) + Real
 │   ├── retriever.py     # 双路混合检索：倒排(BM25-lite) + 向量 + RRF 融合
 │   ├── wiki.py          # 聚合层（raw→wiki：实体/概念聚合页，确定性规则版）
-│   ├── rag.py           # 管线编排：聚合层优先 + 混合检索 + LLM 生成
+│   ├── rules.py         # 权威口径确定性覆盖（读真相源 JSON，LLM 输出错误时修正）
+│   ├── cache.py         # SQLite 语义缓存（相似问题直接返回历史答案）
+│   ├── extract.py       # 纯标准库文档解析（md/txt/xlsx/docx/pdf → Markdown）
+│   ├── rag.py           # 管线编排：聚合层优先 + 混合检索 + 语义缓存 + LLM 生成
 │   ├── eval.py          # golden-set 评测（召回命中率 + 忠实度）
 │   └── static/index.html # 内部体验入口（黑金主题对话 UI）
+├── scripts/
+│   └── build_index.py   # 一键构建索引：扫描语料目录（多格式）→ 灌库 → 刷新索引
 ├── data/
 │   ├── corpus/          # 知识库（维度映射品牌真实经营切面，14 篇含竞品玛芝莲）
 │   ├── wiki/            # 聚合索引（entity/concept 聚合页，启动自动生成）
@@ -196,7 +232,7 @@ swan_rag/
 │   └── eval_golden.json # 评测黄金集
 ├── docs/
 │   └── business-case.md # 业务方案、简历 bullet、叙事框架
-├── tests/test_main.py   # pytest（全程 Mock，离线可跑）
+├── tests/               # pytest（全程 Mock，离线可跑）
 ├── seed_corpus.py       # 灌库脚本
 ├── requirements.txt / requirements-dev.txt
 ├── Dockerfile / docker-compose.yml / .dockerignore / .env.example
