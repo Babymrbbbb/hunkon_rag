@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     # 聚合层编译器：rule=确定性规则（离线可测） | llm=真实 LLM 识别实体/概念并生成聚合页
     wiki_compiler: str = "rule"
 
+    # 精排器：score=保持 RRF 原序（默认，零依赖） | local=本地 ONNX cross-encoder
+    # 模型缺失时 local 自动降级 score（不伪造能力）
+    reranker: str = "score"
+
     # 真实语料目录：默认 data/corpus（脱敏展示）；可指向本地生产知识库（如 D:\WorkBuddy知识库\wiki）
     corpus_dir: str = "data/corpus"
 

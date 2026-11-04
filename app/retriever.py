@@ -324,4 +324,20 @@ class Retriever:
         for score, cid in fused:
             if cid in by_id:
                 result.append((float(score), by_id[cid]))
+
+        # 精排（2026-11-04 新增）：RRF 融合后，用交叉编码器对候选重排。
+        # 默认 RAG_RERANK=score 时保持原序（零开销）；设为 local 且模型存在时
+        # 走真 cross-encoder 精排。模型缺失自动降级 score（不伪造能力）。
+        if query_text.strip() and result:
+            try:
+                from app.reranker import get_reranker
+
+                reranker = get_reranker()
+                if reranker.name != "score":
+                    # 只对 RRF 前 max(top_k*3, 5) 个候选精排，控制成本
+                    pool = result[: max(k * 3, 5)]
+                    result = reranker.rerank(query_text, pool, k)
+            except Exception:
+                # 精排失败绝不影响主检索（降级为原 RRF 结果）
+                pass
         return result

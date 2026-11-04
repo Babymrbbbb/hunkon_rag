@@ -42,6 +42,7 @@
 | 存储 | SQLite + SQLModel（生产可换 pgvector） |
 | LLM / 向量化 | **供应商解耦**：`LLMProvider` / `Embedder` 抽象；向量化三档 `mock`（哈希词袋，CI 用）/ `local`（本地 ONNX，真语义）/ `real`（OpenAI 兼容接口） |
 | 检索 | 文本切分 + 向量余弦召回 top-k + 倒排 BM25-lite，RRF 融合 |
+| 精排 | `app/reranker.py` 可插拔交叉编码器精排（`RAG_RERANK=local` 启用，模型缺失自动降级） |
 | 权威口径 | `app/rules.py` 确定性覆盖：读真相源 JSON，LLM 输出错误时强制修正（门店数/冰面包口径） |
 | 语义缓存 | `app/cache.py` SQLite 语义缓存：相似问题直接返回历史答案，跳过 LLM 调用 |
 | 文档解析 | `app/extract.py` 纯标准库抽取 md/txt/xlsx/docx/pdf → Markdown |
@@ -215,7 +216,8 @@ swan_rag/
 │   ├── metrics.py       # 进程内指标收集（可观测最小实现）
 │   ├── llm.py           # LLMProvider 抽象 + Mock + OpenAICompatible
 │   ├── embedder.py      # Embedder 抽象 + Mock(哈希) + Real
-│   ├── retriever.py     # 双路混合检索：倒排(BM25-lite) + 向量 + RRF 融合
+│   ├── retriever.py     # 双路混合检索：倒排(BM25-lite) + 向量 + RRF 融合 + 精排
+│   ├── reranker.py      # 交叉编码器精排（可插拔，模型缺失降级保持原序）
 │   ├── wiki.py          # 聚合层（raw→wiki：实体/概念聚合页，确定性规则版）
 │   ├── rules.py         # 权威口径确定性覆盖（读真相源 JSON，LLM 输出错误时修正）
 │   ├── cache.py         # SQLite 语义缓存（相似问题直接返回历史答案）
@@ -232,7 +234,8 @@ swan_rag/
 │   ├── eval.py          # golden-set 评测（召回命中率 + 忠实度）
 │   └── static/index.html # 内部体验入口（黑金主题对话 UI）
 ├── scripts/
-│   └── build_index.py   # 一键构建索引：扫描语料目录（多格式）→ 灌库 → 刷新索引
+│   ├── build_index.py   # 一键构建索引：扫描语料目录（多格式）→ 灌库 → 刷新索引
+│   └── download_reranker.py  # 下载 bge-reranker-base ONNX 模型（或打印转换指引）
 ├── data/
 │   ├── corpus/          # 知识库（维度映射品牌真实经营切面，14 篇含竞品玛芝莲）
 │   ├── wiki/            # 聚合索引（entity/concept 聚合页，启动自动生成）
