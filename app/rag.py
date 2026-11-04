@@ -138,8 +138,13 @@ def chat(
         wiki_hits = wiki.search(question)
 
     # RAG 常规路径：混合检索召回原始 chunk
-    qvec = embedder.embed_query(question)
-    hits = retriever.search(session, qvec, top_k, query_text=question, use_hybrid=True)
+    # 查询改写（2026-11-04 接入，默认关闭）：口语化问法先经 LLM 改写为检索友好形式。
+    # 默认 RAG_QUERY_REWRITE=0 时原样返回，零开销。
+    from app.rewrite import rewrite_query
+
+    search_question, _changed = rewrite_query(question)
+    qvec = embedder.embed_query(search_question)
+    hits = retriever.search(session, qvec, top_k, query_text=search_question, use_hybrid=True)
 
     doc_titles = get_doc_titles(session)
     chunk_context = "\n\n".join(

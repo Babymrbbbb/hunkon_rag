@@ -220,7 +220,10 @@ swan_rag/
 │   ├── rules.py         # 权威口径确定性覆盖（读真相源 JSON，LLM 输出错误时修正）
 │   ├── cache.py         # SQLite 语义缓存（相似问题直接返回历史答案）
 │   ├── extract.py       # 纯标准库文档解析（md/txt/xlsx/docx/pdf → Markdown）
-│   ├── rag.py           # 管线编排：聚合层优先 + 混合检索 + 语义缓存 + LLM 生成
+│   ├── feedback.py      # 用户反馈闭环（点赞/点踩，导出 golden set）+ /api/feedback
+│   ├── agg_pages.py     # LLM 批量聚合页生成（权威口径覆盖 + 截断检测）
+│   ├── rewrite.py       # 查询改写（LLM 改写口语化问法，默认关闭，静默降级）
+│   ├── rag.py           # 管线编排：聚合层优先 + 混合检索 + 语义缓存 + 查询改写 + LLM 生成
 │   ├── eval.py          # golden-set 评测（召回命中率 + 忠实度）
 │   └── static/index.html # 内部体验入口（黑金主题对话 UI）
 ├── scripts/

@@ -14,6 +14,7 @@ from app.config import settings
 from app.database import engine, get_session, init_db
 from app.embedder import get_embedder
 from app.eval import run_eval
+from app.feedback import FeedbackStore
 from app.llm import get_llm_provider
 from app.metrics import metrics
 from app.rag import chat as rag_chat, ingest
@@ -165,11 +166,15 @@ def search_endpoint(req: SearchRequest, session: Session = Depends(get_session))
     t0 = time.time()
     embedder = get_embedder()
     retriever = Retriever(embedder, settings.top_k)
+    # 查询改写（2026-11-04 接入，默认关闭）：口语化问法先经 LLM 改写为检索友好形式。
+    from app.rewrite import rewrite_query
+
+    search_query, _changed = rewrite_query(req.query)
     hits = retriever.search(
         session,
-        embedder.embed_query(req.query),
+        embedder.embed_query(search_query),
         req.top_k,
-        query_text=req.query,
+        query_text=search_query,
         use_hybrid=req.hybrid,
     )
     doc_titles = get_doc_titles(session)
@@ -206,3 +211,43 @@ def get_metrics():
 @app.post("/eval")
 def eval_endpoint(session: Session = Depends(get_session)):
     return run_eval(session)
+
+
+@app.post("/api/feedback")
+def add_feedback(req: dict, session: Session = Depends(get_session)):
+    """记录用户对问答结果的反馈（点赞/点踩）。
+
+    请求体：{question, answer, citations?, rating(1/-1), reason?}
+    """
+    store = FeedbackStore()
+    fid = store.add(
+        question=req.get("question", ""),
+        answer=req.get("answer", ""),
+        citations=req.get("citations") or [],
+        rating=req.get("rating", 1),
+        reason=req.get("reason", ""),
+    )
+    store.close()
+    if fid is None:
+        raise HTTPException(status_code=500, detail="反馈写入失败")
+    return {"id": fid, "ok": True}
+
+
+@app.get("/api/feedback/stats")
+def feedback_stats():
+    """反馈统计：总数 / 点赞 / 点踩。"""
+    store = FeedbackStore()
+    try:
+        return store.stats()
+    finally:
+        store.close()
+
+
+@app.get("/api/feedback/list")
+def feedback_list(limit: int = 50, rating: int = None):
+    """查询反馈记录（可按 rating 过滤）。"""
+    store = FeedbackStore()
+    try:
+        return store.list(limit=limit, rating=rating)
+    finally:
+        store.close()
