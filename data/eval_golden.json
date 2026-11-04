@@ -10,9 +10,9 @@
     "expected_hint": "47 家"
   },
   {
-    "question": "冰面包应该怎么保存，保质期是多久？",
-    "expected_doc": "冰面包产品线",
-    "expected_hint": "0–4℃"
+    "question": "冰面包是天鹅公主的在售产品吗？市场通行参考保质期是多少？",
+    "expected_doc": "冰面包市场调研",
+    "expected_hint": "非在售"
   },
   {
     "question": "天鹅公主的包材用了什么材质，是否可持续？",
