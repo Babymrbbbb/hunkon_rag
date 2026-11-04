@@ -51,7 +51,7 @@ def main() -> int:
         print(f"NO_INBOX: {INBOX}")
         return 0
 
-    lines = INBOX.read_text(encoding="utf-8", newline="").splitlines()
+    lines = INBOX.open("r", encoding="utf-8", newline="").read().splitlines()
     pending = []
     pending_idx = []
     for i, ln in enumerate(lines):
@@ -128,7 +128,8 @@ def main() -> int:
                 o["done"] = True
                 new_lines[i] = json.dumps(o, ensure_ascii=False)
                 touched += 1
-        INBOX.write_text("\n".join(new_lines).rstrip("\r\n") + "\n", encoding="utf-8", newline="")
+        with INBOX.open("w", encoding="utf-8", newline="") as f:
+            f.write("\n".join(new_lines).rstrip("\r\n") + "\n")
 
         print(f"INGESTED {len(ingested)}, 跳过 {len(skipped_dup)}, 回写 done {touched}")
 
