@@ -260,7 +260,7 @@ hunkon_rag/
 │   ├── doc_roles.json    # 文档角色映射（多租户 RBAC）
 │   └── eval_golden.json # 评测黄金集
 ├── docs/
-│   └── business-case.md # 业务方案、简历 bullet、叙事框架
+│   └── business-case.md # 业务方案、案例要点、叙事框架
 ├── tests/               # pytest（全程 Mock，离线可跑）
 ├── seed_corpus.py       # 灌库脚本
 ├── requirements.txt / requirements-dev.txt
@@ -446,7 +446,7 @@ RAG_LLM_DISABLE_REASONING=true   # 关闭思考链，直出 content
 | 评测闭环（golden-set） | ✅ 已建立 |
 | 容器化部署（Docker / compose） | ✅ 已就绪，可一键起 |
 | 门店智能体 POC 方案与指标体系（巡检准确率/店长减负率/单店 ROI） | 🟡 方案已定义，指标为试点目标值（详见 [docs/business-case.md](docs/business-case.md) 第五节） |
-| **接入本地生产知识库** | ✅ **支持**：设置 `RAG_CORPUS_DIR` 指向真实语料目录（如 `D:\WorkBuddy知识库\wiki`），递归扫描 entity/concept/comparison/synthesis 全部 md，重建索引即可对真实知识问答 |
+| **接入本地生产知识库** | ✅ **支持**：设置 `RAG_CORPUS_DIR` 指向真实语料目录（如 `./corpus/wiki`），递归扫描 entity/concept/comparison/synthesis 全部 md，重建索引即可对真实知识问答 |
 | 生产级向量库（pgvector）/ 多租户 | 🟡 规划中 |
 
 > 本仓库默认语料为**脱敏/合成展示**（可公开）。**生产使用**时，将 `RAG_CORPUS_DIR` 指向本地真实知识库（见上文），即可对真实品牌/竞品/营销知识问答；真实数据不推送到公开仓库。
@@ -638,4 +638,4 @@ python perf/load_test.py --url http://127.0.0.1:8000/chat --concurrency 100 --re
 
 ## 许可
 
-教学 / 作品集用途。知识库内容为合成数据，与任何真实企业经营数据无关。
+仓库内知识库内容为合成数据，与任何真实企业经营数据无关。
