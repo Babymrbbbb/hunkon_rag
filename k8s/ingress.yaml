@@ -1,0 +1,22 @@
+# hunkon_rag · Kubernetes Ingress（对外 HTTP 暴露）
+# 需集群已部署 Ingress Controller（如 ingress-nginx）。
+# 域名示例：rag.example.com —— 实际使用时替换为你的域名，并配置 DNS。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hunkon-rag
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rag.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hunkon-rag
+                port:
+                  name: http

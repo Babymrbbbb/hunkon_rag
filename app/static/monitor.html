@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hunkon_rag · LLMOps 监控看板</title>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --gold: #c9a063;
+    --gold-light: #e3c88f;
+    --text: #f5f2ec;
+    --muted: #8a8a8a;
+    --green: #4caf50;
+    --red: #e05a5a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: "Microsoft YaHei", system-ui, sans-serif; padding: 24px; }
+  .container { max-width: 1080px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+  header h1 { font-size: 20px; color: var(--gold); }
+  header .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; color: var(--gold-light); }
+  .kpi-card .label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .kpi-card .badge { display: inline-block; margin-top: 8px; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+  .badge.ok { background: rgba(76,175,80,.15); color: var(--green); }
+  .badge.fail { background: rgba(224,90,90,.15); color: var(--red); }
+  .section-title { font-size: 15px; color: var(--gold); margin: 24px 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .rate-bar { height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .rate-bar > div { height: 100%; background: var(--gold); }
+  .history-row { display: flex; align-items: center; gap: 12px; }
+  .empty { color: var(--muted); padding: 32px; text-align: center; border: 1px dashed var(--border); border-radius: 8px; }
+  .footer { color: var(--muted); font-size: 11px; margin-top: 32px; text-align: center; border-top: 1px solid var(--border); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>⚙️ hunkon_rag · LLMOps 监控看板</h1>
+      <div class="sub">评测门禁 + 运行时指标 · 零依赖前端</div>
+    </div>
+    <div id="connStatus" style="font-size:12px;color:var(--muted)">连接中…</div>
+  </header>
+
+  <div class="kpi-grid" id="liveKpis">
+    <div class="kpi-card"><div class="value" id="kpiRequests">-</div><div class="label">总请求数</div></div>
+    <div class="kpi-card"><div class="value" id="kpiChat">-</div><div class="label">问答请求数</div></div>
+    <div class="kpi-card"><div class="value" id="kpiLatency">-</div><div class="label">平均延迟 (ms)</div></div>
+    <div class="kpi-card"><div class="value" id="kpiTokens">-</div><div class="label">累计 Token 消耗</div></div>
+  </div>
+
+  <div class="section-title">📊 评测历史（reports/history.json）</div>
+  <div id="historyContainer"><div class="empty">加载中…</div></div>
+
+  <div class="footer">hunkon_rag · LLMOps 监控 · 数据来源：/metrics + reports/history.json · 仅供架构展示，不用于生产告警</div>
+</div>
+
+<script>
+async function loadMetrics() {
+  try {
+    const r = await fetch('/metrics');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    document.getElementById('kpiRequests').textContent = d.requests ?? 0;
+    document.getElementById('kpiChat').textContent = d.chat_requests ?? 0;
+    document.getElementById('kpiLatency').textContent = d.avg_latency_ms != null ? Math.round(d.avg_latency_ms) : '-';
+    document.getElementById('kpiTokens').textContent = d.total_tokens != null ? d.total_tokens.toLocaleString() : '-';
+    document.getElementById('connStatus').textContent = '● 已连接 /metrics';
+    document.getElementById('connStatus').style.color = 'var(--green)';
+  } catch (e) {
+    document.getElementById('connStatus').textContent = '○ /metrics 不可达（需启动服务）';
+    document.getElementById('connStatus').style.color = 'var(--red)';
+  }
+}
+
+async function loadHistory() {
+  const el = document.getElementById('historyContainer');
+  try {
+    const r = await fetch('/reports/history.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const h = await r.json();
+    if (!Array.isArray(h) || h.length === 0) {
+      el.innerHTML = '<div class="empty">暂无评测记录 —— 运行 <code>python -m app.eval_cli --mock</code> 生成首条评测。</div>';
+      return;
+    }
+    const rows = h.slice().reverse().map(rec => {
+      const pass = rec.passed;
+      const badge = pass
+        ? '<span class="badge ok">✅ 通过</span>'
+        : '<span class="badge fail">❌ 未达阈值</span>';
+      const ratePct = (rec.retrieval_hit_rate * 100).toFixed(1);
+      const faithPct = (rec.faithfulness_rate * 100).toFixed(1);
+      return `<tr>
+        <td>${rec.timestamp.replace('T', ' ')}</td>
+        <td>${rec.total}</td>
+        <td><div class="history-row">${ratePct}%<div class="rate-bar" style="width:120px"><div style="width:${ratePct}%"></div></div></div></td>
+        <td>${faithPct}%</td>
+        <td>${badge}</td>
+      </tr>`;
+    }).join('');
+    el.innerHTML = `<table>
+      <thead><tr><th>时间</th><th>用例数</th><th>召回命中率</th><th>忠实度</th><th>结果</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">无法读取 reports/history.json（服务未启动或文件不存在）</div>';
+  }
+}
+
+loadMetrics();
+loadHistory();
+setInterval(loadMetrics, 5000);
+</script>
+</body>
+</html>

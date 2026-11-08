@@ -1,0 +1,10 @@
+{
+  "_comment": "文档角色映射：source（data/corpus 下的相对路径）→ 最小可见角色。staff < franchise < ops。默认所有文档 staff 可见；只有明确标记更高角色的才受限。",
+  "roles": {
+    "10_franchise.md": "franchise",
+    "06_supplychain.md": "ops",
+    "08_ops_faq.md": "ops",
+    "07_competitor_jinlimen.md": "ops",
+    "13_competitor_mazhilian.md": "ops"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-10-30T18:58:47",
+  "url": "http://127.0.0.1:8000/chat",
+  "concurrency": 200,
+  "requests": 600,
+  "total_time_s": 2.66,
+  "qps": 225.86,
+  "p50_ms": 822.03,
+  "p95_ms": 876.36,
+  "p99_ms": 883.81,
+  "avg_ms": 710.09,
+  "error_rate": 0.0,
+  "ok_count": 600,
+  "status_counts": {
+    "200": 600
+  }
+}

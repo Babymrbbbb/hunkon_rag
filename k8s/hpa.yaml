@@ -1,0 +1,21 @@
+# hunkon_rag · HorizontalPodAutoscaler
+# 基于 CPU 使用率水平扩缩容：默认 2 副本，CPU 超 70% 自动扩容，最多 6 副本。
+# 依赖：metrics-server 已部署（kubectl top nodes 可用）。
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hunkon-rag
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hunkon-rag
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

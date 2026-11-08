@@ -1,0 +1,14 @@
+services:
+  hunkon-rag:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - RAG_API_KEY=${RAG_API_KEY:-dev-secret-key}
+      - RAG_LLM_PROVIDER=${RAG_LLM_PROVIDER:-mock}
+      - RAG_LLM_BASE_URL=${RAG_LLM_BASE_URL:-https://api.openai.com/v1}
+      - RAG_LLM_API_KEY=${RAG_LLM_API_KEY:-}
+      - RAG_LLM_MODEL=${RAG_LLM_MODEL:-gpt-4o-mini}
+      - RAG_EMBEDDER_PROVIDER=${RAG_EMBEDDER_PROVIDER:-mock}
+      - RAG_TOP_K=3
+    restart: unless-stopped

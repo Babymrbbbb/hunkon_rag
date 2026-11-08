@@ -1,0 +1,16 @@
+# hunkon_rag · Kubernetes Service
+# ClusterIP：集群内稳定访问入口，配合 Deployment 多副本负载均衡。
+apiVersion: v1
+kind: Service
+metadata:
+  name: hunkon-rag
+  labels:
+    app: hunkon-rag
+spec:
+  selector:
+    app: hunkon-rag
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http

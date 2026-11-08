@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 虚拟环境
+.venv/
+venv/
+
+# 本地数据库（运行时生成）
+*.db
+*.db-shm
+*.db-wal
+
+# 密钥与环境
+.env
+
+# 编辑器
+.idea/
+.vscode/
+
+# 运行时生成的 wiki 聚合层缓存（eval 时自动重建）
+data/wiki/
+
+# 本地 ONNX 向量模型（613 MB，绝不入库）
+_models/
+
+# 评测报告：本地产物，每跑一次就多几个文件，不入库以免弄脏工作区
+# （2026-11-03）reports/history.json 例外保留：它是评测趋势的证据，
+# 且 /reports/history.json 路由与监控看板依赖它，缺失时路由会返回空数组。
+reports/eval_report_*.md
+reports/probe_*.md

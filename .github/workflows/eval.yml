@@ -1,0 +1,85 @@
+name: eval-gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 评测必须是确定性的：显式声明离线 provider 与语料目录，
+# 不依赖 .env（.env 被 gitignore，CI 里本来也不存在）。2026-11-03 加固。
+env:
+  RAG_LLM_PROVIDER: mock
+  RAG_EMBEDDER_PROVIDER: mock
+  RAG_WIKI_COMPILER: rule
+  RAG_AUTO_SEED: "true"
+  RAG_CORPUS_DIR: data/corpus
+
+jobs:
+  eval:
+    name: RAG Eval Gate (mock)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      # 单元测试前置：锁住检索契约（RRF 顺序、接地护栏等），
+      # 防止「评测侥幸通过但底层逻辑已坏」的回归。2026-11-03 新增。
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Run eval gate
+        id: eval
+        # 阈值 0.95：8 条用例下等价于要求 8/8。mock 评测是确定性的，
+        # 基线 100% 时若仍用 0.75，单条回归（7/8=87.5%）会被放行。2026-11-03 收紧。
+        run: |
+          python -m app.eval_cli --mock --json --threshold 0.95 > /tmp/eval_result.json
+          cat /tmp/eval_result.json
+
+      # 语义探针：只测「向量层语义泛化」，**不设门禁**。
+      # CI 无 613 MB 本地模型，local 会降级为 mock（脚本会标注「降级」），
+      # 因此这里仅作冒烟与留痕；有意义的对照需在装有模型的机器上跑。
+      - name: Semantic probe (non-blocking)
+        continue-on-error: true
+        run: python -m app.eval_probe --embedders mock
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: |
+            /tmp/eval_result.json
+            reports/eval_report_*.md
+            reports/probe_*.md
+          if-no-files-found: warn
+
+      - name: Report result
+        if: always()
+        run: |
+          python - <<'EOF'
+          import json, pathlib
+          p = pathlib.Path("/tmp/eval_result.json")
+          if not p.exists():
+              print("评测结果文件缺失，评测步骤可能提前失败")
+              raise SystemExit(2)
+          r = json.loads(p.read_text(encoding="utf-8"))
+          print(f"用例总数: {r['total']}")
+          print(f"召回命中率: {r['retrieval_hit_rate']:.1%} (阈值 {r['threshold']:.0%})")
+          print(f"忠实度: {r['faithfulness_rate']:.1%}")
+          print("结果: " + ("✅ 通过" if r["passed"] else "❌ 未达阈值"))
+          if not r["passed"]:
+              raise SystemExit(2)
+          EOF

@@ -1,0 +1,22 @@
+{
+  "source_note": "hunkon_rag 业务事实的集中真相源（门店数据见同目录 store_facts.json）。本文件所有数值均为合成演示值，与任何真实企业经营数据无关；收录门店以外的关键业务数字/日期，每条事实的 must_appear 关键词须出现在 data/corpus/*.md 中，由 tests/test_business_grounding.py 校验。更新流程：改此处并同步 data/corpus/*.md，pytest 卡点即能发现遗漏。本仓库数据为合成演示数据，与任何真实企业经营数据无关；文档只描述方法论与工程实现。",
+  "claims": {
+    "member_count": {"value": "15,000", "desc": "会员规模（合成演示值）", "must_appear": ["15,000"]},
+    "campaign_launch_date": {"value": "6 月 1 日", "desc": "夏季新品上市日期（合成演示值）", "must_appear": ["6 月 1 日"]},
+    "campaign_new_products": {"value": ["黑金可颂", "联名桃酥", "荔枝玫瑰冻芝士", "青提冷萃欧包"], "desc": "夏季四款限定新品（合成演示值）", "must_appear": ["黑金可颂", "联名桃酥", "荔枝玫瑰冻芝士", "青提冷萃欧包"]},
+    "campaign_positioning": {"value": "低糖、清爽、高颜值", "desc": "新品定位（合成演示值）", "must_appear": ["低糖、清爽、高颜值"]},
+    "packaging_box": {"value": "新中式礼盒（演示主色系 / 可持续材质 / 新中式美学 / 防震结构 / 可视窗）", "desc": "新品包材与包材设计规范要点（合成演示值）", "must_appear": ["新中式礼盒", "演示主色系", "可持续材质", "新中式美学", "防震结构", "可视窗"]},
+    "franchise_model": {"value": "直营为主", "desc": "加盟模型（合成演示值）", "must_appear": ["直营为主"]},
+    "franchise_min_area": {"value": "200 ㎡", "desc": "加盟最小铺位面积（合成演示值）", "must_appear": ["200 ㎡"]},
+    "franchise_min_capital": {"value": "100 万元", "desc": "加盟起步启动资金（合成演示值）", "must_appear": ["100 万元"]},
+    "franchise_training": {"value": "4 周", "desc": "加盟总部培训周期（合成演示值）", "must_appear": ["4 周"]},
+    "loyalty_points": {"value": "1 元积 1 分", "desc": "会员积分规则（合成演示值）", "must_appear": ["1 元积 1 分"]},
+    "loyalty_high_value": {"value": 5000, "desc": "高净值会员年消费门槛（元，合成演示值）", "must_appear": ["5000"]},
+    "supply_chain_temp": {"value": "0–4℃", "desc": "冷链全程温控范围（合成演示值）", "must_appear": ["0–4"]},
+    "supply_chain_loss_rate": {"value": "≤3%", "desc": "报损率上限（合成演示值）", "must_appear": ["3%"]},
+    "ops_order_deadline": {"value": "20:00", "desc": "门店每日订货截止时间（合成演示值）", "must_appear": ["20:00"]},
+    "ops_shift_peaks": {"value": "早 8、晚 6（双峰）", "desc": "排班客流双峰（合成演示值）", "must_appear": ["早 8", "晚 6"]},
+    "digital_ai": {"value": "2026 年上线 AI 客服", "desc": "数字化 AI 客服上线年份（合成演示值）", "must_appear": ["AI 客服", "2026"]},
+    "competitor_b": {"value": "竞品乙是本地烘焙品牌，近年从区域连锁向供应链平台升维，2025 年底启动超级工厂战略，在政企蛋糕券等 B 端采购市场活跃，是本地 B 端团购领域的直接竞争者", "desc": "竞品乙定位（合成演示值）", "must_appear": ["竞品乙", "超级工厂", "B 端", "供应链平台"]}
+  }
+}

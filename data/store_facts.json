@@ -1,0 +1,16 @@
+{
+  "brand": "演示品牌",
+  "as_of": "2026",
+  "total_stores": 12,
+  "distribution": {
+    "A 市": 6,
+    "B 市": 3,
+    "C 市": 2,
+    "D 市": 1
+  },
+  "cities_without_stores": ["E 市"],
+  "nonexistent_cities": ["E 市"],
+  "members": 15000,
+  "source": "合成演示数据（与任何真实企业经营数据无关）",
+  "note": "本文件是门店数据的唯一真相源（Single Source of Truth）。数值均为合成演示值：门店总数 12 家；A 市 6 / B 市 3 / C 市 2 / D 市 1；E 市无门店（同时列入 nonexistent_cities，corpus 中不得出现）；会员规模 15,000。data/corpus/*.md 中任何门店相关数字都必须与此一致；tests/test_grounding.py 会自动校验，不一致将阻断 CI。本仓库数据为合成演示数据，与任何真实企业经营数据无关；文档只描述方法论与工程实现。"
+}
