@@ -4,7 +4,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - RAG_API_KEY=${RAG_API_KEY:-dev-secret-key}
+      # 不设弱默认值：留空则服务启动时生成随机强密钥（重启即变）。
+      # 稳定演示请在 .env 里显式设置 RAG_API_KEY（例如 openssl rand -hex 24）。
+      - RAG_API_KEY=${RAG_API_KEY:-}
       - RAG_LLM_PROVIDER=${RAG_LLM_PROVIDER:-mock}
       - RAG_LLM_BASE_URL=${RAG_LLM_BASE_URL:-https://api.openai.com/v1}
       - RAG_LLM_API_KEY=${RAG_LLM_API_KEY:-}

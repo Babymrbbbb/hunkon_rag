@@ -1,17 +1,30 @@
 """配置分离：pydantic-settings，所有变量以 RAG_ 前缀从环境变量/.env 读取。"""
+import secrets
+
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _random_key() -> str:
+    """生成进程级临时强密钥：避免把可预测的弱字面量写进代码。
+
+    未配置 RAG_API_KEY 时每个进程生成一个随机值（重启即变）；
+    生产/稳定演示必须用环境变量显式指定，否则客户端无法复用。
+    """
+    return secrets.token_urlsafe(32)
 
 
 class Settings(BaseSettings):
     # 数据库
     rag_db_file: str = "hunkon_rag.db"
 
-    # 全局鉴权
-    api_key: str = "dev-secret-key"
+    # 全局鉴权：默认随机强密钥，绝不硬编码可预测值；用 RAG_API_KEY 覆盖。
+    api_key: str = Field(default_factory=_random_key)
 
     # 多租户 RBAC（2026-11-04 新增）：三档角色各自的 API Key。
-    # 缺省时全部回落到 api_key（兼容旧配置/测试）。
-    api_key_staff: str = "dev-secret-key"
+    # 留空时回落到 api_key（见 rbac.role_for_key 末尾的默认分支）。
+    # 角色 key 一律由 RAG_API_KEY_STAFF / FRANCHISE / OPS 显式配置，不设弱默认值。
+    api_key_staff: str = ""
     api_key_franchise: str = ""
     api_key_ops: str = ""
 

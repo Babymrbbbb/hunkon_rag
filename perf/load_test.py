@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import threading
 import time
@@ -69,13 +70,16 @@ def percentile(data: list[float], p: float) -> float:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="http://127.0.0.1:8000/chat")
-    ap.add_argument("--api-key", default="dev-secret-key")
+    # 从环境变量读取，不写死弱密钥；未设置时压测会因 401 明确失败，提示显式配置。
+    ap.add_argument("--api-key", default=os.environ.get("RAG_API_KEY", ""))
     ap.add_argument("--concurrency", type=int, default=100, help="并发数")
     ap.add_argument("--requests", type=int, default=300, help="总请求数")
     ap.add_argument("--timeout", type=int, default=120)
     ap.add_argument("--question", default=DEFAULT_QUESTION)
     args = ap.parse_args()
 
+    if not args.api_key:
+        ap.error("未提供 API Key：请设置环境变量 RAG_API_KEY 或用 --api-key 显式传入")
     latencies: list[float] = []
     errors = 0
     status_counts: dict[int, int] = {}

@@ -84,6 +84,7 @@
     <div class="sub">
       <span id="model-label">检索增强生成</span>
       <div class="actions">
+        <input class="icon-btn" id="apiKeyInput" type="password" placeholder="API Key" title="填入服务端配置的 RAG_API_KEY" style="width:150px" />
         <button class="icon-btn" id="clearBtn" title="清空对话">清空</button>
       </div>
     </div>
@@ -104,7 +105,19 @@
   </div>
 
 <script>
-const API_KEY = "dev-secret-key";
+// API Key 不写死在前端：由使用者在页面填入并保存到 localStorage。
+// 服务端默认每次启动生成随机强密钥，稳定使用请显式配置 RAG_API_KEY。
+const API_KEY_STORE = "hunkon_rag_api_key";
+let API_KEY = "";
+try{ API_KEY = localStorage.getItem(API_KEY_STORE) || ""; }catch(e){}
+const apiKeyInput = document.getElementById("apiKeyInput");
+if(apiKeyInput){
+  apiKeyInput.value = API_KEY;
+  apiKeyInput.addEventListener("change", e=>{
+    API_KEY = e.target.value.trim();
+    try{ localStorage.setItem(API_KEY_STORE, API_KEY); }catch(err){}
+  });
+}
 const log = document.getElementById("log");
 const q = document.getElementById("q");
 const sendBtn = document.getElementById("send");
@@ -179,6 +192,10 @@ log.addEventListener("click", async e=>{
 // ---------- 发送问题 ----------
 async function ask(text){
   if(!text.trim()) return;
+  if(!API_KEY){
+    addMsg("bot", '<span class="err">请先在页面右上角填入 API Key（服务端 RAG_API_KEY），填一次会记住</span>');
+    return;
+  }
   addMsg("user", escapeHtml(text));
   q.value = "";
   const typing = addMsg("bot", '<span class="typing"><span class="typing-dot">●</span><span class="typing-dot">●</span><span class="typing-dot">●</span></span>');
