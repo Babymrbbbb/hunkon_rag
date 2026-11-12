@@ -22,6 +22,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.llm import get_llm_provider  # noqa: E402
+from app.rules import apply_ruling_overrides, register_ruling_path  # noqa: E402
+
+# 模式 A：登记本模块实际产出对外文本的执行路径（见 app.rules）。
+# 对比页 / 综合页同样可能含门店数等权威口径，必须和聚合页走同一份覆盖闸。
+register_ruling_path("special_pages.gen_comparison")
+register_ruling_path("special_pages.gen_synthesis")
 
 WIKI_DIR = ROOT / "data" / "wiki"
 ENTITY_DIR = WIKI_DIR / "entity"
@@ -80,7 +86,7 @@ def gen_comparison(page_name: str, entity_a: str, entity_b: str) -> tuple:
         f"# {entity_a} vs {entity_b}\n\n"
         f"- 类型：comparison\n"
         f"- 编译时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        f"{compiled.strip()}\n"
+        f"{apply_ruling_overrides(compiled.strip())}\n"
     )
     page_path.write_text(content, encoding="utf-8")
     return True, str(page_path)
@@ -126,7 +132,7 @@ def gen_synthesis(page_name: str, involved: list, strategy_topic: str) -> tuple:
         f"# {strategy_topic}\n\n"
         f"- 类型：synthesis\n"
         f"- 编译时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        f"{compiled.strip()}\n"
+        f"{apply_ruling_overrides(compiled.strip())}\n"
     )
     page_path.write_text(content, encoding="utf-8")
     return True, str(page_path)

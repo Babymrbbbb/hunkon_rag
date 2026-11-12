@@ -29,7 +29,10 @@ if str(ROOT) not in sys.path:
 
 from app.config import settings  # noqa: E402
 from app.llm import get_llm_provider  # noqa: E402
-from app.rules import apply_ruling_overrides  # noqa: E402
+from app.rules import apply_ruling_overrides, register_ruling_path  # noqa: E402
+
+# 模式 A：登记本模块实际产出对外文本的执行路径（见 app.rules）。
+register_ruling_path("agg_pages.llm_agg")
 
 WIKI_DIR = ROOT / "data" / "wiki"
 ENTITY_DIR = WIKI_DIR / "entity"
