@@ -30,6 +30,10 @@ uvicorn app.main:app --reload   # 启动对话服务
 > 数据均为合成演示数据，与任何真实企业经营数据无关；clone 后替换 `data/corpus`
 > 与 `data/*_facts.json` 即可接入自己的语料与权威事实。
 
+**Agent 技能包**：`skills/` 把三道确定性护栏（口径覆盖 / 同义扩展过滤 / 空输入失败）
+封装为可组合、可独立调用的技能，供 AI 编码 Agent 按需 load 或 compose 成管线。
+见 [skills/SKILL.md](skills/SKILL.md) 与 [docs/blog/rag-ruling-skill-package.md](docs/blog/rag-ruling-skill-package.md)。
+
 ---
 
 ## 一、业务背景与痛点
